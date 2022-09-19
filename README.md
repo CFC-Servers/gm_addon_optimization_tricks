@@ -1,5 +1,5 @@
 # gm_addon_optimization_tricks
-Tips &amp; Tricks to make your addon slim and fast
+Tips and Tricks to make your addon slim and fast
 
-# Glossary
- - [**Audio/Sounds**](https://github.com/CFC-Servers/gm_addon_optimization_tricks/wiki/Audio)
+## All documentation is stored in the Wiki
+Please visit the Wiki to read more: https://github.com/CFC-Servers/gm_addon_optimization_tricks/wiki
