@@ -74,5 +74,10 @@ for path, subdirs, files in os.walk(PATH_TO_DIR):
                 print("Converted", filepath, "successfully:", w, "x", h, "->", int(neww), "x", int(newh))
 
 print("Done.")
+print("Clamped to", CLAMP_SIZE, "pixels.")
 print("Replaced", replace_count, "files.")
-print("Reduced size by ", round((1 - new_size / old_size) * 100, 2), "%")
+if replace_count == 0:
+    print("No files were replaced.")
+else:
+    print("Reduced size by ", round((1 - new_size / old_size) * 100, 2), "%")
+    print("Reduced size by ", round((old_size - new_size) / 1000000, 2), "mbs")
