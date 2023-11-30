@@ -1,6 +1,8 @@
 import pydub
 import os
 
+# Requires ffmpeg to be installed and added to PATH
+
 PATH_TO_DIR = r"garrysmod\addons\addon_name"
 
 replaced_files = {}
