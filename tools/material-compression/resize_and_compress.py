@@ -1,4 +1,3 @@
-from lib2to3.pytree import convert
 from PIL import Image
 import os
 import VTFLibWrapper.VTFLib as VTFLib
@@ -10,10 +9,13 @@ from VTFLibWrapper.VTFLibEnums import ImageFormat
 
 # Source for the original: https://github.com/HaodongMo/ARC-9-Standard-Weapons/tree/main/tools
 # Edit these variables
-PATH_TO_DIR = r"garrysmod\addons\addon\materials"
+PATH_TO_DIR = r"garrysmod\addons\addon_name"
 CLAMP_SIZE = 512
 
 vtf_lib = VTFLib.VTFLib()
+old_size = 0
+new_size = 0
+replace_count = 0
 
 for path, subdirs, files in os.walk(PATH_TO_DIR):
     # print(path)
@@ -39,7 +41,6 @@ for path, subdirs, files in os.walk(PATH_TO_DIR):
             # print(format.name)
 
             if scale != 1 or format not in (ImageFormat.ImageFormatDXT1, ImageFormat.ImageFormatDXT5):
-            # if True:
                 image_full = vtf_lib.image_load(filepath, False)
                 def_options = vtf_lib.create_default_params_structure()
                 image_data = vtf_lib.get_rgba8888()
@@ -52,7 +53,7 @@ for path, subdirs, files in os.walk(PATH_TO_DIR):
                     image = image.convert("RGB")
                     image_scaled = image.resize((int(neww), int(newh)))
                     image_a_scaled = a.resize((int(neww), int(newh)))
-                    r,g,b = image_scaled.split()
+                    r, g, b = image_scaled.split()
                     colorImage = (r, g, b, image_a_scaled)
                     image = Image.merge('RGBA', colorImage)
 
@@ -65,11 +66,13 @@ for path, subdirs, files in os.walk(PATH_TO_DIR):
                 def_options.Resize = 1
 
                 vtf_lib.image_create_single(int(neww), int(newh), image_data, def_options)
+
+                old_size += os.path.getsize(filepath)
                 vtf_lib.image_save(filepath)
+                new_size += os.path.getsize(filepath)
+                replace_count += 1
                 print("Converted", filepath, "successfully:", w, "x", h, "->", int(neww), "x", int(newh))
 
-
-
-
-
-
+print("Done.")
+print("Replaced", replace_count, "files.")
+print("Reduced size by ", round((1 - new_size / old_size) * 100, 2), "%")
