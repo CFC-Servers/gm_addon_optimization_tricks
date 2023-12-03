@@ -20,7 +20,7 @@ for root, dirs, files in os.walk(DIR):
         if ext == ".lua":
             file_names.append(file)
             lua_contents += file + "\n"
-            with open(os.path.join(root, file), "r") as f:
+            with open(os.path.join(root, file), "r", encoding="utf-8") as f:
                 lua_contents += f.read()
 
         if ext == ".wav" or ext == ".mp3" or ext == ".pcf" or ext == ".png" or ext == ".mndl":
