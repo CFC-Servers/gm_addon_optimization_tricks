@@ -40,7 +40,7 @@ for path, subdirs, files in os.walk(PATH_TO_DIR):
 
             # print(format.name)
 
-            if scale != 1 or format not in (ImageFormat.ImageFormatDXT1, ImageFormat.ImageFormatDXT5):
+            if scale != 1 or format != ImageFormat.ImageFormatDXT1:
                 image_full = vtf_lib.image_load(filepath, False)
                 def_options = vtf_lib.create_default_params_structure()
                 image_data = vtf_lib.get_rgba8888()
@@ -48,6 +48,10 @@ for path, subdirs, files in os.walk(PATH_TO_DIR):
 
                 image = Image.frombytes("RGBA", (w, h), image_data)
                 r, g, b, a = image.split()
+
+                method = ImageFormat.ImageFormatDXT5
+                if a.getextrema()[1] == 255 and a.getextrema()[0] == 255:
+                    method = ImageFormat.ImageFormatDXT1
 
                 if scale != 1:
                     image = image.convert("RGB")
@@ -61,7 +65,7 @@ for path, subdirs, files in os.walk(PATH_TO_DIR):
                 image_data = image_data.astype(np.uint8, copy=False)
                 image_data = create_string_buffer(image_data.tobytes())
 
-                def_options.ImageFormat = ImageFormat.ImageFormatDXT5
+                def_options.ImageFormat = method
                 def_options.Flags |= VTFLibEnums.ImageFlag.ImageFlagEightBitAlpha
                 def_options.Resize = 1
 
