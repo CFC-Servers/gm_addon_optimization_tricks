@@ -12,13 +12,11 @@ formats_to_remove = [
     ".sw.vtx",
 ]
 
-# Loop through all files in the directory and subdirectories and store the contents of all lua files / files to scan
 for root, dirs, files in os.walk(DIR):
     for file in files:
         _, ext = os.path.splitext(file)
         relative_path = os.path.relpath(root, DIR)
 
-        # check if file ends with .lua
         for format in formats_to_remove:
             if file.endswith(format):
                 total_size += os.path.getsize(os.path.join(root, file))
