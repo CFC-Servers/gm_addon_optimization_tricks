@@ -1,6 +1,9 @@
 import os
 import humanize
 
+# Removes unused model formats from a directory, such as .dx80.vtx, .xbox.vtx, .sw.vtx
+# These are effectively not used in gmod and can take up a lot of space
+
 # Config
 DIR = r"garrysmod\addons\addon_name"
 
