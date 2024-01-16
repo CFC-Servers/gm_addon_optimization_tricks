@@ -1,8 +1,6 @@
-from lib2to3.pytree import convert
 from PIL import Image
 import os
 import VTFLibWrapper.VTFLib as VTFLib
-import VTFLibWrapper.VTFLibEnums as VTFLibEnums
 import numpy as np
 from ctypes import create_string_buffer
 
@@ -10,9 +8,13 @@ from VTFLibWrapper.VTFLibEnums import ImageFormat
 
 # Source for the original: https://github.com/HaodongMo/ARC-9-Standard-Weapons/tree/main/tools
 # Edit these variables
-PATH_TO_DIR = r"garrysmod\addons\addon\materials"
+PATH_TO_DIR = r"garrysmod\addons\addon_name"
 
 vtf_lib = VTFLib.VTFLib()
+old_size = 0
+new_size = 0
+replace_count = 0
+
 
 def has_transparency(img):
     if image.info.get("transparency", None) is not None:
@@ -28,6 +30,7 @@ def has_transparency(img):
             return True
 
     return False
+
 
 for path, subdirs, files in os.walk(PATH_TO_DIR):
     for name in files:
@@ -56,13 +59,19 @@ for path, subdirs, files in os.walk(PATH_TO_DIR):
                     image_data = (np.asarray(image)*-1) * 255
                     image_data = image_data.astype(np.uint8, copy=False)
                     image_data = create_string_buffer(image_data.tobytes())
-                    
+
                     vtf_lib.image_create_single(w, h, image_data, def_options)
+
+                    old_size += os.path.getsize(filepath)
                     vtf_lib.image_save(filepath)
+                    new_size += os.path.getsize(filepath)
+                    replace_count += 1
                     print("DXT1-ified", filepath, "successfully.")
 
-
-
-
-
-
+print("Done.")
+print("Replaced", replace_count, "files.")
+if replace_count == 0:
+    print("No files were replaced.")
+else:
+    print("Reduced size by ", round((1 - new_size / old_size) * 100, 2), "%")
+    print("Reduced size by ", round((old_size - new_size) / 1000000, 2), "mbs")
