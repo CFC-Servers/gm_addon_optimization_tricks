@@ -36,6 +36,9 @@ def resizeVTFImage(path, max_size):
         if a.getextrema()[1] == 255 and a.getextrema()[0] == 255:
             method = ImageFormat.ImageFormatDXT1
 
+        if scale == 1 and format == method:
+            return False
+
         if scale != 1:
             image = image.convert("RGB")
             image_scaled = image.resize((int(neww), int(newh)))
@@ -55,6 +58,8 @@ def resizeVTFImage(path, max_size):
         vtf_lib.image_create_single(int(neww), int(newh), image_data, def_options)
 
         vtf_lib.image_save(path)
+
+        print(scale != 1 and "Resized" or "Converted", path, "successfully:", w, "x", h, "->", int(neww), "x", int(newh))
         return True
     return False
 

@@ -3,7 +3,7 @@ from resizelib import resizeVTF
 
 # Edit these variables
 PATH_TO_FILE = r"garrysmod\addons\addon_name\materials\material_name.vtf"
-CLAMP_SIZE = 4
+CLAMP_SIZE = 512
 # End of variables
 
 old_size = 0
