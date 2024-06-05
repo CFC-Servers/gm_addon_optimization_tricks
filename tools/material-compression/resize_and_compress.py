@@ -1,5 +1,6 @@
 import os
 import signal
+import time
 from resizelib import resizeVTF
 
 # Edit these variables
@@ -10,12 +11,14 @@ CLAMP_SIZE = 512  # This can be set to a absurdly high number to only use DXT1 c
 old_size = 0
 new_size = 0
 replace_count = 0
+startime = time.time()
 
 
 def signal_handler(sig, frame):
     if os.path.exists("crashfile.txt"):
         os.remove("crashfile.txt")
 
+    print("Time taken:", round(time.time() - startime, 2), "seconds")
     print("Cancelled by user.")
     exit()
 
@@ -55,3 +58,4 @@ else:
     print("Clamped to", CLAMP_SIZE, "resolution.")
     print("Reduced size by ", round((1 - new_size / old_size) * 100, 2), "%")
     print("Reduced size by ", round((old_size - new_size) / 1000000, 2), "mbs")
+print("Time taken:", round(time.time() - startime, 2), "seconds")
