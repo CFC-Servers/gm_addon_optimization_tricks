@@ -1,5 +1,4 @@
 import os
-import humanize
 
 # Removes unused model formats from a directory, such as .dx80.vtx, .xbox.vtx, .sw.vtx
 # These are effectively not used in gmod and can take up a lot of space
@@ -27,4 +26,4 @@ for root, dirs, files in os.walk(DIR):
                 print("Removed", os.path.join(root, file))
 
 
-print("Total size of unused files: ",  humanize.naturalsize(total_size))
+print("Total size of unused files: ",  round(total_size / 1000000, 2), "mb")
