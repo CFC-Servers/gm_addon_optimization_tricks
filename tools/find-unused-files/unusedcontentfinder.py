@@ -29,6 +29,7 @@ for root, dirs, files in os.walk(DIR):
 combined_sizes = 0
 for file, fullpath in files_to_check.items():
     filename = os.path.splitext(file)[0]
+    lua_contents = lua_contents.lower()
     if filename not in lua_contents:
         combined_sizes += os.path.getsize(fullpath)
         print("Found unused file: ", fullpath)
