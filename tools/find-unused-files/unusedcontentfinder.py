@@ -1,5 +1,4 @@
 import os
-import humanize
 
 # Config
 DIR = r"C:\path\to\folder"
@@ -35,4 +34,4 @@ for file, fullpath in files_to_check.items():
         print("Found unused file: ", fullpath)
         # os.remove(fullpath) # Uncomment to remove files
 
-print("Total size of unused files: ",  humanize.naturalsize(combined_sizes))
+print("Total size of unused files: ",  round(combined_sizes / 1000000, 2), "mbs")
