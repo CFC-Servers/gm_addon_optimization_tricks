@@ -3,7 +3,7 @@
 import os
 from PIL import Image
 
-MAX_SIZE = 128
+MAX_SIZE = 256
 PATH_TO_DIR = r"C:\foldername"
 
 new_file_path = PATH_TO_DIR + "/resized"
@@ -33,4 +33,6 @@ for path, subdirs, files in os.walk(PATH_TO_DIR):
                 total_resized += os.path.getsize(filepath)
                 print(f"Resized {filepath} from {w}x{h} to {neww}x{newh}")
 
-print(f"Resized {total_files} files, saved {total_resized} bytes, {total_size - total_resized} bytes saved")
+total_resized_mb = round(total_resized / 1000000, 2)
+total_saved_mb = round((total_size - total_resized) / 1000000, 2)
+print(f"Resized {total_files} files, saved {total_resized_mb} mb, {total_saved_mb} mb saved")
