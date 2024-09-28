@@ -1,10 +1,10 @@
 from PIL import Image
-import VTFLibWrapper.VTFLib as VTFLib
-import VTFLibWrapper.VTFLibEnums as VTFLibEnums
+import material_compression.VTFLibWrapper.VTFLib as VTFLib
+import material_compression.VTFLibWrapper.VTFLibEnums as VTFLibEnums
 import numpy as np
 from ctypes import create_string_buffer
 
-from VTFLibWrapper.VTFLibEnums import ImageFormat
+from material_compression.VTFLibWrapper.VTFLibEnums import ImageFormat
 
 vtf_lib = VTFLib.VTFLib()
 
