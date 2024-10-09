@@ -4,10 +4,6 @@ import os
 from PIL import Image
 
 def clamp_pngs(folder, max_size):
-    new_file_path = folder + "/resized"
-    if not os.path.exists(new_file_path):
-        os.makedirs(new_file_path)
-
     total_size = 0
     total_resized = 0
     total_files = 0
@@ -27,10 +23,9 @@ def clamp_pngs(folder, max_size):
                     neww = int(w * scale)
                     newh = int(h * scale)
                     image = image.resize((neww, newh))
-                    image.save(new_file_path + "/" + name)
+                    image.save(filepath, quality=95)
                     total_resized += os.path.getsize(filepath)
                     print(f"Resized {filepath} from {w}x{h} to {neww}x{newh}")
 
-    total_resized_mb = round(total_resized / 1000000, 2)
     total_saved_mb = round((total_size - total_resized) / 1000000, 2)
-    print(f"Resized {total_files} files, saved {total_resized_mb} mb, {total_saved_mb} mb saved")
+    print(f"Resized {total_files} files, {total_saved_mb} mb saved")
