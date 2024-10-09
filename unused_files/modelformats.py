@@ -11,6 +11,7 @@ def unused_model_formats(folder, remove=True):
         ".dx80.vtx",
         ".xbox.vtx",
         ".sw.vtx",
+        ".360.vtx"
     ]
 
     for root, dirs, files in os.walk(folder):
