@@ -47,15 +47,13 @@ def resizeVTFImage(path, max_size):
             colorImage = (r, g, b, image_a_scaled)
             image = Image.merge('RGBA', colorImage)
 
-        image_data = (np.asarray(image)*-1) * 255
-        image_data = image_data.astype(np.uint8, copy=False)
-        image_data = create_string_buffer(image_data.tobytes())
+        new_image_data = image.tobytes()
 
         def_options.ImageFormat = method
         def_options.Flags |= VTFLibEnums.ImageFlag.ImageFlagEightBitAlpha
         def_options.Resize = 1
 
-        vtf_lib.image_create_single(int(neww), int(newh), image_data, def_options)
+        vtf_lib.image_create_single(int(neww), int(newh), new_image_data, def_options)
 
         vtf_lib.image_save(path)
 
