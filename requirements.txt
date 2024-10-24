@@ -1,2 +1,3 @@
 questionary
 pydub
+pillow
