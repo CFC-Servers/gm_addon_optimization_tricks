@@ -1,3 +1,4 @@
 questionary
 pydub
 pillow
+audioop-lts; python_version>='3.13'
