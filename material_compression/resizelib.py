@@ -1,7 +1,6 @@
 from PIL import Image
 import material_compression.VTFLibWrapper.VTFLib as VTFLib
 import material_compression.VTFLibWrapper.VTFLibEnums as VTFLibEnums
-import numpy as np
 from ctypes import create_string_buffer
 
 from material_compression.VTFLibWrapper.VTFLibEnums import ImageFormat
