@@ -20,7 +20,7 @@ def main():
         return
 
     action =  questionary.select( "What do you want to do?",
-        choices=["Unused model formats", "Find unused content (WIP)", "Compress VTF files", "Use DXT for VTFs", "Clamp PNG files", ".wav to .mp3 (lowers filesize)","Exit"],
+        choices=["Unused model formats", "Find unused content (WIP)", "Compress VTF files", "Use DXT for VTFs", "Clamp PNG files", ".wav to .mp3 (lowers filesize) (skips looped/cued files)","Exit"],
     ).ask()
     
     if not action:
