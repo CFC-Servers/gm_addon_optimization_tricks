@@ -63,7 +63,7 @@ def main():
         size = questionary.text("Clamp size:", validate=lambda text: True if text.isdigit() else "Please enter a valid number").ask()
         clamp_pngs(FOLDER, int(size))
 
-    if action == ".wav to .mp3 (lowers filesize)":
+    if action == ".wav to .mp3 (lowers filesize) (skips looped/cued files)":
         wav_to_mp3(FOLDER)
 
     main()
