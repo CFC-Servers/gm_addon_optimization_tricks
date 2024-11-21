@@ -78,9 +78,12 @@ def wav_to_mp3(folder):
                 with open(filepath, "r", encoding="utf-8") as f:
                     contents = f.read()
                 for old, new in replaced_files.items():
-                    contents = contents.replace(old, new)
+                    new_contents = contents.replace(old, new)
+                if contents == new_contents:
+                    continue
+
                 with open(filepath, "w", encoding="utf-8") as f:
-                    f.write(contents)
+                    f.write(new_contents)
                 print("Replaced", filepath, "successfully.")
 
     print("Done.")
