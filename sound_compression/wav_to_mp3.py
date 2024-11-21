@@ -48,6 +48,9 @@ def wav_to_mp3(folder):
             filetype = name.split(".")[-1]
             if filetype == "wav":
                 wav_info = WavInfoReader(filepath)
+                if wav_info.cues == None:
+                    continue
+
                 if len(wav_info.cues.cues) > 0:
                     print("File", filepath, "contains cues skipping.")
                     continue
@@ -77,13 +80,19 @@ def wav_to_mp3(folder):
             if filetype == "lua":
                 with open(filepath, "r", encoding="utf-8") as f:
                     contents = f.read()
+                
+                replaced = False
                 for old, new in replaced_files.items():
                     new_contents = contents.replace(old, new)
-                if contents == new_contents:
+                    if new_contents != contents:
+                        replaced = True
+                    contents = new_contents
+
+                if not replaced:
                     continue
 
                 with open(filepath, "w", encoding="utf-8") as f:
-                    f.write(new_contents)
+                    f.write(contents)
                 print("Replaced", filepath, "successfully.")
 
     print("Done.")
