@@ -5,37 +5,6 @@ from wavinfo import WavInfoReader
 # Requires ffmpeg to be installed and added to PATH
 # https://github.com/jiaaro/pydub?tab=readme-ov-file#getting-ffmpeg-set-up
 
-def has_loop(file_path):
-    """Checks if a WAV file contains loop metadata in the smpl chunk."""
-    try:
-        with open(file_path, "rb") as f:
-            # Verify RIFF/WAVE file
-            riff_header = f.read(12)
-            if riff_header[:4] != b'RIFF' or riff_header[8:12] != b'WAVE':
-                return False
-            
-            # Parse chunks
-            while True:
-                chunk_header = f.read(8)
-                if len(chunk_header) < 8:
-                    break  # End of file
-                
-                chunk_id = chunk_header[:4].decode('ascii')
-                chunk_size = int.from_bytes(chunk_header[4:], byteorder='little')
-                
-                if chunk_id == "smpl":
-                    # Check for loop data in the smpl chunk
-                    smpl_data = f.read(chunk_size)
-                    num_loops = int.from_bytes(smpl_data[28:32], byteorder='little')
-                    if num_loops > 0:
-                        return True
-                else:
-                    f.seek(chunk_size, 1)  # Skip to the next chunk
-            
-            return False
-    except Exception as e:
-        return False
-
 def wav_to_mp3(folder):
     replaced_files = {}
     old_size = 0
@@ -55,7 +24,7 @@ def wav_to_mp3(folder):
                     print("File", filepath, "contains cues skipping.")
                     continue
 
-                if has_loop(filepath):
+                if wav_info.smpl != None and len(wav_info.smpl.sample_loops) > 0:
                     print("File", filepath, "contains loops skipping.")
                     continue
 
