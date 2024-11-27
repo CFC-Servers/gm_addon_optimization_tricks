@@ -16,7 +16,6 @@ def main():
     if not FOLDER:
         FOLDER = questionary.text("Absolute path to folder:").ask()
     if not FOLDER:
-        main()
         return
 
     action =  questionary.select( "What do you want to do?",
