@@ -46,7 +46,7 @@ def wav_to_mp3(folder):
         for name in files:
             filepath = os.path.join(path, name)
             filetype = name.split(".")[-1]
-            if filetype == "lua":
+            if filetype == "lua" or filetype == "txt" or filetype == "json":
                 with open(filepath, "r", encoding="utf-8") as f:
                     contents = f.read()
                 
