@@ -46,7 +46,6 @@ def resize_and_compress(folder, size):
                 new_size += old_size_temp
                 old_size += old_size_temp
 
-    os.remove("crashfile.txt")
     print("Replaced", replace_count, "files.")
     if replace_count == 0:
         print("No files were replaced.")
