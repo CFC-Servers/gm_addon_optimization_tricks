@@ -14,3 +14,5 @@ pip install -r requirements.txt
 
 REM Run script
 py main.py
+
+pause
