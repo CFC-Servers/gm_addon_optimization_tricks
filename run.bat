@@ -10,9 +10,9 @@ REM Activate the virtual env
 call venv\Scripts\activate.bat
 
 REM Install required packages for the env
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 
 REM Run script
-py main.py
+python main.py
 
 pause
