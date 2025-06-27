@@ -5,10 +5,7 @@ from ctypes import create_string_buffer
 
 from material_compression.VTFLibWrapper.VTFLibEnums import ImageFormat
 
-vtf_lib = VTFLib.VTFLib()
-
-
-def resizeVTFImage(path, max_size):
+def resizeVTFImage(vtf_lib, path, max_size):
     w = vtf_lib.width()
     h = vtf_lib.height()
     neww = w
@@ -26,7 +23,7 @@ def resizeVTFImage(path, max_size):
         vtf_lib.image_load(path, False)
         def_options = vtf_lib.create_default_params_structure()
         image_data = vtf_lib.get_rgba8888()
-        image_data = bytes(image_data.contents)
+        image_data = bytes(image_data.contents) # Why would you crash here with no exception. I am sad >:(
 
         image = Image.frombytes("RGBA", (w, h), image_data)
         r, g, b, a = image.split()
@@ -64,11 +61,12 @@ def resizeVTFImage(path, max_size):
 def resizeVTF(path, max_size) -> bool:
     if not path.endswith(".vtf"):
         return False
-
+    
+    vtf_lib = VTFLib.VTFLib() # Give each run it's own vtflib instance so we can possibly run them in parallel later on.
     vtf_lib.image_load(path, True)
 
     if vtf_lib.frame_count() == 1:
-        return resizeVTFImage(path, max_size)
+        return resizeVTFImage(vtf_lib, path, max_size)
     else:
         print("Skipping", path, "because it has multiple frames.")
         return False

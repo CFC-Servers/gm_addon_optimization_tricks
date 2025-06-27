@@ -1,2 +1,4 @@
 *.pyc
 venv
+crashfile.txt
+blacklist.txt
