@@ -21,16 +21,28 @@ def resize_and_compress(folder, size):
 
     signal.signal(signal.SIGINT, signal_handler)
 
+    invalidFiles = {}
     if os.path.exists("crashfile.txt"):
         with open("crashfile.txt", "r") as f:
-            print("Crash/exit detected! Last file processed:", f.read())
+            invalidFile = f.read()
+            with open("blacklist.txt", "a") as file:
+                file.write(invalidFile + "\n")
+
+            print("Crash/exit detected! Last file processed:", invalidFile)
             print("Try importing and exporting the VTF with VTFEdit to fix it.")
 
         os.remove("crashfile.txt")
 
+    # A list with files that are blacklisted due to them crashing
+    if os.path.exists("blacklist.txt"):
+        with open("blacklist.txt", "r") as f:
+            for line in f.readlines():
+            	print("Loading file from blacklist:", line.strip())
+                invalidFiles[line.strip()] = True
+
     for path, subdirs, files in os.walk(folder):
         for name in files:
-            if not name.endswith(".vtf"):
+            if not name.endswith(".vtf") or (os.path.join(path, name) in invalidFiles):
                 continue
 
             with open("crashfile.txt", "w") as f:
