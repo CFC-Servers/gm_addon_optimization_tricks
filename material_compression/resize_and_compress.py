@@ -37,7 +37,7 @@ def resize_and_compress(folder, size):
     if os.path.exists("blacklist.txt"):
         with open("blacklist.txt", "r") as f:
             for line in f.readlines():
-            	print("Loading file from blacklist:", line.strip())
+                print("Loading file from blacklist:", line.strip())
                 invalidFiles[line.strip()] = True
 
     for path, subdirs, files in os.walk(folder):
