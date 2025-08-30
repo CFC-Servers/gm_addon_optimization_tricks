@@ -21,7 +21,7 @@ def main():
     FOLDER = FOLDER.strip('"')
 
     action =  questionary.select( "What do you want to do?",
-        choices=["Unused model formats", "Find unused content (WIP)", "Compress VTF files", "Use DXT for VTFs", "Clamp PNG files", ".wav to .mp3 (lowers filesize) (skips looped/cued files)","Exit"],
+        choices=["Unused model formats", "Find unused content (WIP)", "Compress VTF files", "Use DXT for VTFs", "Clamp PNG files", ".wav to .mp3 (lowers filesize) (skips looped/cued files)","Select another folder", "Exit"],
     ).ask()
     
     if not action:
@@ -66,6 +66,12 @@ def main():
 
     if action == ".wav to .mp3 (lowers filesize) (skips looped/cued files)":
         wav_to_mp3(FOLDER)
+
+    if action == "Select another folder":
+        FOLDER = questionary.text("Absolute path to folder:").ask()
+        if not FOLDER:
+            return
+        FOLDER = FOLDER.strip('"')
 
     main()
 
