@@ -61,6 +61,7 @@ def resize_and_compress(folder, size):
     if os.path.exists("crashfile.txt"):
         os.remove("crashfile.txt")
 
+    print("="*60)
     print("Replaced", replace_count, "files.")
     if replace_count == 0:
         print("No files were replaced.")
@@ -69,3 +70,4 @@ def resize_and_compress(folder, size):
         print("Reduced size by ", round((1 - new_size / old_size) * 100, 2), "%")
         print("Reduced size by ", round((old_size - new_size) / 1000000, 2), "mbs")
     print("Time taken:", round(time.time() - startime, 2), "seconds")
+    print("="*60)

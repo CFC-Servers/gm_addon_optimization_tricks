@@ -33,4 +33,6 @@ def clamp_pngs(folder, max_size):
                     total_resized += original_size
 
     total_saved_mb = round((total_size - total_resized) / 1000000, 2)
+    print("="*60)
     print(f"Resized {total_resized_files} files, {total_saved_mb} mb saved")
+    print("="*60)

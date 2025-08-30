@@ -6,6 +6,7 @@ from unused_files.modelformats import unused_model_formats
 from unused_files.content import unused_content
 from material_compression.resize_and_compress import resize_and_compress
 from material_compression.resize_png import clamp_pngs
+from material_compression.remove_mipmaps import remove_mipmaps
 from sound_compression.wav_to_mp3 import wav_to_mp3
 
 FOLDER = ""
@@ -19,6 +20,7 @@ def handle_unused_model_formats():
     else:
         print(f"Found {count} unused model formats, taking up {formatted_size}")
 
+
 def handle_unused_content():
     remove = questionary.confirm("Do you want to remove the found unused files? This isn't 100% and can remove used files!").ask()
     size, count = unused_content(FOLDER, remove)
@@ -27,13 +29,20 @@ def handle_unused_content():
     else:
         print(f"Found {count} unused files, taking up {format_size(size)}")
 
+
 def handle_compress_vtf():
     size = questionary.text("Clamp size:", validate=lambda text: True if text.isdigit() else "Please enter a valid number").ask()
     if size:
         resize_and_compress(FOLDER, int(size))
 
+
 def handle_use_dxt():
     resize_and_compress(FOLDER, 1000000)
+
+
+def handle_remove_mipmaps():
+    remove_mipmaps(FOLDER)
+
 
 def handle_clamp_png():
     size = questionary.text("Clamp size:", validate=lambda text: True if text.isdigit() else "Please enter a valid number").ask()
@@ -73,9 +82,10 @@ def main():
     actions = {
         "Unused model formats": handle_unused_model_formats,
         "Find unused content (WIP)": handle_unused_content,
-        "Compress VTF files": handle_compress_vtf,
+        "Clamp VTF file sizes": handle_compress_vtf,
         "Use DXT for VTFs": handle_use_dxt,
-        "Clamp PNG files": handle_clamp_png,
+        "Remove mipmaps (Useful for close-up textures, eg viewmodels)": handle_remove_mipmaps,
+        "Clamp PNG file sizes": handle_clamp_png,
         ".wav to .mp3 (lowers filesize) (skips looped/cued files)": handle_wav_to_mp3,
         "Resave VTF files to trigger autorefresh": handle_resave_vtf,
         "Select another folder": handle_select_folder,
