@@ -93,7 +93,7 @@ def main():
         "Remove mipmaps (Useful for close-up textures, eg viewmodels)": handle_remove_mipmaps,
         "Clamp PNG file sizes": handle_clamp_png,
         ".wav to .mp3 (lowers filesize) (skips looped/cued files)": handle_wav_to_mp3,
-        "trim empty audio from end of .wav files": handle_trim_empty_audio,
+        "Trim empty audio from end of .wav files": handle_trim_empty_audio,
         "Resave VTF files to trigger autorefresh": handle_resave_vtf,
         "Select another folder": handle_select_folder,
     }
