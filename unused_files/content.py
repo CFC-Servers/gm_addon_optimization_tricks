@@ -41,26 +41,30 @@ def unused_content(path, remove=False):
     all_vtfs = []
     for model, vmts in all_model_vmts.items():
         for vmt_path in vmts:
-            with open( os.path.join(path, vmt_path), "r", encoding="utf-8") as f:
-                vmt = Material.parse(f, filename=vmt_path)
-            for vmtfield in vmt.items():
-                if vmtfield[0].startswith("$basetexture"):
-                    vtf = os.path.normpath(vmtfield[1])
-                    all_model_vtfs[model] = all_model_vtfs.get(model, [])
-                    all_model_vtfs[model].append(vtf)
-                    all_vtfs.append(vtf)
-                    vmf_used_count[vtf] = vmf_used_count.get(vtf, 0) + 1
+            vmt_full_path = os.path.join(path, vmt_path)
+            if os.path.exists(vmt_full_path):
+                with open(vmt_full_path, "r", encoding="utf-8") as f:
+                    vmt = Material.parse(f, filename=vmt_path)
+                for vmtfield in vmt.items():
+                    if vmtfield[0].startswith("$basetexture"):
+                        vtf = os.path.normpath(vmtfield[1])
+                        all_model_vtfs[model] = all_model_vtfs.get(model, [])
+                        all_model_vtfs[model].append(vtf)
+                        all_vtfs.append(vtf)
+                        vmf_used_count[vtf] = vmf_used_count.get(vtf, 0) + 1
 
     # Find all the models used in lua files
     all_lua_used_models = []
     for file in fs.walk_folder('lua'):
         if file.path.endswith('.lua'):
-            with open( os.path.join(path, file.path), "r", encoding="utf-8") as f:
-                lua_contents = f.read()
-                lua_contents = lua_contents.lower()
-                for model in all_models:
-                    if model in lua_contents:
-                        all_lua_used_models.append(model)
+            lua_file_path = os.path.join(path, file.path)
+            if os.path.exists(lua_file_path):
+                with open(lua_file_path, "r", encoding="utf-8") as f:
+                    lua_contents = f.read()
+                    lua_contents = lua_contents.lower()
+                    for model in all_models:
+                        if model in lua_contents:
+                            all_lua_used_models.append(model)
 
     # print not used models
     print("Unused models:")
@@ -91,13 +95,15 @@ def unused_content(path, remove=False):
     unused_vmts = []
     for vmt_used in vmt_used_count:
         if vmt_used_count[vmt_used] == 0:
-            unused_vmts.append(vmt_used)
-            unused_sizes += os.path.getsize(os.path.join(path, vmt_used))
-            unused_count += 1
-            print("Found unused file:", os.path.join(path, vmt_used))
-            if remove:
-                os.remove(os.path.join(path, vmt_used))
-                print("Removed", vmt_used)
+            vmt_file_path = os.path.join(path, vmt_used)
+            if os.path.exists(vmt_file_path):
+                unused_vmts.append(vmt_used)
+                unused_sizes += os.path.getsize(vmt_file_path)
+                unused_count += 1
+                print("Found unused file:", vmt_file_path)
+                if remove:
+                    os.remove(vmt_file_path)
+                    print("Removed", vmt_used)
     
     unused_vtfs = []
     for vtf_used in vmf_used_count:
