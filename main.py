@@ -8,6 +8,8 @@ from material_compression.resize_and_compress import resize_and_compress
 from material_compression.resize_png import clamp_pngs
 from material_compression.remove_mipmaps import remove_mipmaps
 from sound_compression.wav_to_mp3 import wav_to_mp3
+from sound_compression.wav_to_ogg import wav_to_ogg
+from sound_compression.mp3_to_ogg import mp3_to_ogg
 from sound_compression.trim_empty import trim_empty_audio
 
 FOLDER = ""
@@ -54,6 +56,14 @@ def handle_wav_to_mp3():
     wav_to_mp3(FOLDER)
 
 
+def handle_wav_to_ogg():
+    wav_to_ogg(FOLDER)
+
+
+def handle_mp3_to_ogg():
+    mp3_to_ogg(FOLDER)
+
+
 def handle_trim_empty_audio():
     trim_empty_audio(FOLDER)
 
@@ -92,8 +102,10 @@ def main():
         "Use DXT for VTFs": handle_use_dxt,
         "Remove mipmaps (Useful for close-up textures, eg viewmodels)": handle_remove_mipmaps,
         "Clamp PNG file sizes": handle_clamp_png,
+        ".wav to .ogg (lowers filesize) (skips looped/cued files) (better than mp3)": handle_wav_to_ogg,
         ".wav to .mp3 (lowers filesize) (skips looped/cued files)": handle_wav_to_mp3,
-        "Trim empty audio from end of .wav files": handle_trim_empty_audio,
+        ".mp3 to .ogg": handle_mp3_to_ogg,
+        "Trim empty audio from end of sound files, not great convert to ogg first as trimming might not do anything": handle_trim_empty_audio,
         "Resave VTF files to trigger autorefresh": handle_resave_vtf,
         "Select another folder": handle_select_folder,
     }

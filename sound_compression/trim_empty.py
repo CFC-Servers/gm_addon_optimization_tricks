@@ -3,14 +3,15 @@ import signal
 import time
 from pydub import AudioSegment, silence
 
-def trim_single_audio_file(input_file, silence_thresh=-55, min_silence_len=50):
+def trim_single_audio_file(input_file, silence_thresh=-55, min_silence_len=50, fade_duration=200):
     """
-    Trim silence from the end only of a single wav file.
+    Trim silence from the end of a single audio file (WAV, MP3, or OGG) and apply fade-out.
 
     Args:
-        input_file (str): Path to input WAV file.
+        input_file (str): Path to input audio file (WAV, MP3, or OGG).
         silence_thresh (int): Silence threshold in dBFS. Default -55 dB.
         min_silence_len (int): Minimum length of silence (ms) to trim. Default 50 ms.
+        fade_duration (int): Duration of fade-out effect in milliseconds. Default 200 ms.
     
     Returns:
         tuple: (success, message, bytes_saved)
@@ -19,8 +20,19 @@ def trim_single_audio_file(input_file, silence_thresh=-55, min_silence_len=50):
         # Get original file size
         original_size = os.path.getsize(input_file)
         
-        # Load audio file
-        audio = AudioSegment.from_wav(input_file)
+        # Determine file format and load audio file
+        file_ext = os.path.splitext(input_file)[1].lower()
+        if file_ext == '.wav':
+            audio = AudioSegment.from_wav(input_file)
+            export_format = "wav"
+        elif file_ext == '.mp3':
+            audio = AudioSegment.from_mp3(input_file)
+            export_format = "mp3"
+        elif file_ext == '.ogg':
+            audio = AudioSegment.from_ogg(input_file)
+            export_format = "ogg"
+        else:
+            return False, f"Unsupported file format: {file_ext}", 0
         original_duration = len(audio)
 
         # Detect non-silent chunks
@@ -39,31 +51,40 @@ def trim_single_audio_file(input_file, silence_thresh=-55, min_silence_len=50):
             
             # Only trim from the end, keep the start intact
             trimmed_audio = audio[0:end_trim]
+            
+            # Apply fade-out effect to make the ending smoother
+            if len(trimmed_audio) > fade_duration:
+                trimmed_audio = trimmed_audio.fade_out(fade_duration)
+            else:
+                # If audio is shorter than fade duration, fade the entire audio
+                trimmed_audio = trimmed_audio.fade_out(len(trimmed_audio))
+            
             new_duration = len(trimmed_audio)
             
-            # Export result (overwrite original)
-            trimmed_audio.export(input_file, format="wav")
+            # Export result with original format (overwrite original)
+            trimmed_audio.export(input_file, format=export_format)
             
             # Calculate savings
             new_size = os.path.getsize(input_file)
             bytes_saved = original_size - new_size
             time_saved = original_duration - new_duration
             
-            return True, f"Trimmed {time_saved/1000:.1f}s of silence from end", bytes_saved
+            return True, f"Trimmed {time_saved/1000:.1f}s of silence from end + fade-out", bytes_saved
         else:
             return False, "No non-silent audio detected", 0
             
     except Exception as e:
         return False, f"Error processing file: {str(e)}", 0
 
-def trim_empty_audio(folder, silence_thresh=-55, min_silence_len=50):
+def trim_empty_audio(folder, silence_thresh=-55, min_silence_len=50, fade_duration=200):
     """
-    Trim silence from the end only of all WAV files in the specified folder.
+    Trim silence from the end of all audio files (WAV, MP3, OGG) in the specified folder and apply fade-out.
     
     Args:
-        folder (str): Path to folder containing WAV files.
+        folder (str): Path to folder containing audio files.
         silence_thresh (int): Silence threshold in dBFS. Default -55 dB.
         min_silence_len (int): Minimum length of silence (ms) to trim. Default 50 ms.
+        fade_duration (int): Duration of fade-out effect in milliseconds. Default 200 ms.
     """
     old_size = 0
     new_size = 0
@@ -100,13 +121,14 @@ def trim_empty_audio(folder, silence_thresh=-55, min_silence_len=50):
                     invalid_files.add(line)
                     print(f"Blacklisted file: {line}")
     
-    print(f"Scanning for WAV files in: {folder}")
-    print("Trimming silence from end of WAV files...")
+    print(f"Scanning for audio files in: {folder}")
+    print("Trimming silence from end of audio files (WAV, MP3, OGG) with fade-out...")
     
-    # Process all WAV files
+    # Process all audio files
     for root, dirs, files in os.walk(folder):
         for filename in files:
-            if not filename.lower().endswith(".wav"):
+            file_ext = filename.lower()
+            if not (file_ext.endswith(".wav") or file_ext.endswith(".mp3") or file_ext.endswith(".ogg")):
                 continue
                 
             file_path = os.path.join(root, filename)
@@ -126,7 +148,7 @@ def trim_empty_audio(folder, silence_thresh=-55, min_silence_len=50):
                 old_size += old_file_size
                 
                 # Process the file
-                success, message, bytes_saved = trim_single_audio_file(file_path, silence_thresh, min_silence_len)
+                success, message, bytes_saved = trim_single_audio_file(file_path, silence_thresh, min_silence_len, fade_duration)
                 processed_count += 1
                 
                 if success:
@@ -165,10 +187,3 @@ def trim_empty_audio(folder, silence_thresh=-55, min_silence_len=50):
     
     print(f"Time taken: {round(time.time() - start_time, 2)} seconds")
     print("="*60)
-
-if __name__ == "__main__":
-    import sys
-    if len(sys.argv) > 1:
-        trim_empty_audio(sys.argv[1])
-    else:
-        print("Usage: python trim_empty.py <folder_path>")

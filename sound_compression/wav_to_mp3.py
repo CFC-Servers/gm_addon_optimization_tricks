@@ -64,10 +64,11 @@ def wav_to_mp3(folder):
                     f.write(contents)
                 print("Replaced", filepath, "successfully.")
 
-    print("Done.")
+    print("="*60)
     print("Replaced", replace_count, "files.")
     if replace_count == 0:
         print("No files were replaced.")
     else:
         print("Reduced size by ", round((1 - new_size / old_size) * 100, 2), "%")
         print("Reduced size by ", round((old_size - new_size) / 1000000, 2), "mbs")
+    print("="*60)
