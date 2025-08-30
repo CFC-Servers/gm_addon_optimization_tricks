@@ -8,6 +8,7 @@ from material_compression.resize_and_compress import resize_and_compress
 from material_compression.resize_png import clamp_pngs
 from material_compression.remove_mipmaps import remove_mipmaps
 from sound_compression.wav_to_mp3 import wav_to_mp3
+from sound_compression.trim_empty import trim_empty_audio
 
 FOLDER = ""
 
@@ -52,6 +53,11 @@ def handle_clamp_png():
 def handle_wav_to_mp3():
     wav_to_mp3(FOLDER)
 
+
+def handle_trim_empty_audio():
+    trim_empty_audio(FOLDER)
+
+
 def handle_resave_vtf():
     for root, dirs, files in os.walk(FOLDER):
         for filename in files:
@@ -87,6 +93,7 @@ def main():
         "Remove mipmaps (Useful for close-up textures, eg viewmodels)": handle_remove_mipmaps,
         "Clamp PNG file sizes": handle_clamp_png,
         ".wav to .mp3 (lowers filesize) (skips looped/cued files)": handle_wav_to_mp3,
+        "trim empty audio from end of .wav files": handle_trim_empty_audio,
         "Resave VTF files to trigger autorefresh": handle_resave_vtf,
         "Select another folder": handle_select_folder,
     }
