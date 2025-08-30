@@ -6,6 +6,7 @@ from PIL import Image
 def clamp_pngs(folder, max_size):
     total_size = 0
     total_resized = 0
+    total_resized_files = 0
     total_files = 0
 
     for path, subdirs, files in os.walk(folder):
@@ -14,7 +15,8 @@ def clamp_pngs(folder, max_size):
             filetype = name.split(".")[-1]
             if filetype == "png":
                 total_files += 1
-                total_size += os.path.getsize(filepath)
+                original_size = os.path.getsize(filepath)
+                total_size += original_size
                 image = Image.open(filepath)
                 w, h = image.size
                 if w > max_size or h > max_size:
@@ -25,7 +27,10 @@ def clamp_pngs(folder, max_size):
                     image = image.resize((neww, newh))
                     image.save(filepath, quality=95)
                     total_resized += os.path.getsize(filepath)
+                    total_resized_files += 1
                     print(f"Resized {filepath} from {w}x{h} to {neww}x{newh}")
+                else:
+                    total_resized += original_size
 
     total_saved_mb = round((total_size - total_resized) / 1000000, 2)
-    print(f"Resized {total_files} files, {total_saved_mb} mb saved")
+    print(f"Resized {total_resized_files} files, {total_saved_mb} mb saved")
