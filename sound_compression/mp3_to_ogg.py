@@ -1,4 +1,5 @@
 import pydub
+import pydub.exceptions
 import os
 
 # Requires ffmpeg to be installed and added to PATH
@@ -16,7 +17,14 @@ def mp3_to_ogg(folder):
             filetype = name.split(".")[-1]
             if filetype == "mp3":
                 old_size += os.path.getsize(filepath)
-                sound = pydub.AudioSegment.from_mp3(filepath)
+                try:
+                    sound = pydub.AudioSegment.from_mp3(filepath)
+                except pydub.exceptions.CouldntDecodeError as e:
+                    print(f"Skipping corrupted MP3 file: {filepath} - Error: {e}")
+                    continue
+                except Exception as e:
+                    print(f"Skipping MP3 file due to unexpected error: {filepath} - Error: {e}")
+                    continue
 
                 new_filepath = filepath.replace(".mp3", ".ogg")
                 sound.export(new_filepath, format="ogg")
