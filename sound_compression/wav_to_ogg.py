@@ -1,5 +1,6 @@
 import pydub
 import os
+import re
 from wavinfo import WavInfoReader
 
 # Requires ffmpeg to be installed and added to PATH
@@ -52,7 +53,8 @@ def wav_to_ogg(folder):
                 
                 replaced = False
                 for old, new in replaced_files.items():
-                    new_contents = contents.replace(old, new)
+                    pattern = re.escape(old)
+                    new_contents = re.sub(pattern, new, contents, flags=re.IGNORECASE)
                     if new_contents != contents:
                         replaced = True
                     contents = new_contents
