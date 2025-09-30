@@ -36,14 +36,10 @@ def get_vpk_files(gamefolder: str) -> Set[str]:
         return vpk_files
     
     print(f"Found {len(found_vpks)} VPK file(s) to process:")
-    for vpk_path in found_vpks:
-        print(f"  {os.path.basename(vpk_path)}")
     
     # Process each VPK file
     for vpk_path in found_vpks:
         try:
-            print(f"Processing {os.path.basename(vpk_path)}...")
-            
             # Counter for this VPK
             file_count = 0
             
