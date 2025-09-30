@@ -84,11 +84,13 @@ def handle_find_map_content():
     if not map_file or not os.path.exists(map_file) or not map_file.endswith(".vmf"):
         print("Invalid map file")
         return
+    map_file = map_file.strip('"')
 
     new_content_folder = questionary.text("Folder to copy found content to (will be created if it doesn't exist):").ask()
     if not new_content_folder:
         print("Invalid destination folder")
         return
+    os.makedirs(new_content_folder, exist_ok=True)
 
     find_map_content(FOLDER, new_content_folder, map_file)
 
