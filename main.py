@@ -4,6 +4,7 @@ import os
 from utils.formatting import format_size
 from unused_files.modelformats import unused_model_formats
 from unused_files.content import unused_content
+from unused_files.remove_game_files import remove_game_files
 from material_compression.resize_and_compress import resize_and_compress
 from material_compression.resize_png import clamp_pngs
 from material_compression.remove_mipmaps import remove_mipmaps
@@ -31,6 +32,16 @@ def handle_unused_content():
         print(f"Removed {count} unused files, saving {format_size(size)}")
     else:
         print(f"Found {count} unused files, taking up {format_size(size)}")
+
+def handle_remove_game_files():
+    remove = questionary.confirm("Do you want to remove the found files?").ask()
+    gamefolder = questionary.text("Absolute path to game folder (eg C:/Program Files(x86)/Steam/steamapps/common/GarrysMod)").ask()
+    # check if gmod.exe exists in the folder
+    if not gamefolder or not os.path.exists(os.path.join(gamefolder, "gmod.exe")):
+        print("Invalid game folder")
+        return
+
+    remove_game_files(FOLDER, gamefolder, remove)
 
 
 def handle_compress_vtf():
@@ -105,8 +116,9 @@ def main():
         ".wav to .ogg (lowers filesize) (skips looped/cued files) (better than mp3)": handle_wav_to_ogg,
         ".wav to .mp3 (lowers filesize) (skips looped/cued files)": handle_wav_to_mp3,
         ".mp3 to .ogg": handle_mp3_to_ogg,
-        "Trim empty audio from end of sound files, not great convert to ogg first as trimming might not do anything": handle_trim_empty_audio,
+        "Trim empty audio from end of sound files, not great. convert to ogg first as trimming might not do anything": handle_trim_empty_audio,
         "Resave VTF files to trigger autorefresh": handle_resave_vtf,
+        "Remove files that are already in the game (eg HL2, CSS) good for map files": handle_remove_game_files,
         "Select another folder": handle_select_folder,
     }
 
