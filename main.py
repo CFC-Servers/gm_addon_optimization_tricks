@@ -12,6 +12,7 @@ from sound_compression.wav_to_mp3 import wav_to_mp3
 from sound_compression.wav_to_ogg import wav_to_ogg
 from sound_compression.mp3_to_ogg import mp3_to_ogg
 from sound_compression.trim_empty import trim_empty_audio
+from mapping.find_map_content import find_map_content
 
 FOLDER = ""
 
@@ -78,6 +79,18 @@ def handle_mp3_to_ogg():
 def handle_trim_empty_audio():
     trim_empty_audio(FOLDER)
 
+def handle_find_map_content():
+    map_file = questionary.text("Absolute path to map file (.vmf):").ask()
+    if not map_file or not os.path.exists(map_file) or not map_file.endswith(".vmf"):
+        print("Invalid map file")
+        return
+
+    new_content_folder = questionary.text("Folder to copy found content to (will be created if it doesn't exist):").ask()
+    if not new_content_folder:
+        print("Invalid destination folder")
+        return
+
+    find_map_content(FOLDER, new_content_folder, map_file)
 
 def handle_resave_vtf():
     for root, dirs, files in os.walk(FOLDER):
@@ -119,6 +132,7 @@ def main():
         "Trim empty audio from end of sound files, not great. convert to ogg first as trimming might not do anything": handle_trim_empty_audio,
         "Resave VTF files to trigger autorefresh": handle_resave_vtf,
         "Remove files that are already in the game (eg HL2, CSS) good for map files": handle_remove_game_files,
+        "Find and copy all content used by a map file (.vmf)": handle_find_map_content,
         "Select another folder": handle_select_folder,
     }
 
