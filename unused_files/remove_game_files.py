@@ -111,6 +111,20 @@ def remove_game_files(folder, gamefolder, remove=True):
                         print(f"Failed to remove {rel_path}: {e}")
                 else:
                     print(f"Would remove: {rel_path}")
+
+    # check for empty directories and remove them
+    for root, dirs, files in os.walk(folder, topdown=False):
+        for dir in dirs:
+            dir_path = os.path.join(root, dir)
+            if not os.listdir(dir_path):
+                if remove:
+                    try:
+                        os.rmdir(dir_path)
+                        print(f"Removed empty directory: {os.path.relpath(dir_path, folder).replace('\\', '/')}")
+                    except Exception as e:
+                        print(f"Failed to remove directory {dir_path}: {e}")
+                else:
+                    print(f"Would remove empty directory: {os.path.relpath(dir_path, folder).replace('\\', '/')}")
     
     print("="*60)
     if remove:
