@@ -1,7 +1,7 @@
 # gm_addon_optimization_tricks
-Tips and Tricks to make your addon slim and fast
+Desktop tool to optimize Garry's Mod addons/maps
 
-On Windows you can use the bundled runner:
+On Windows you can simply click:
 ```bat
 run.bat
 ```
