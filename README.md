@@ -6,7 +6,7 @@ On Windows you can use the bundled runner:
 run.bat
 ```
 
-This will create a virtual environment, install requirements (including PySide6), and launch the desktop UI. You can also run it directly with:
+This will create a virtual environment, install requirements, and launch the desktop UI. You can also run it directly with:
 ```bash
 python gui.py
 ```

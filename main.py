@@ -83,6 +83,11 @@ class MainWindow(QtWidgets.QMainWindow):
         super().__init__()
         self.setWindowTitle("GM Addon Optimization Tools")
         self.resize(980, 720)
+        
+        # Set window icon
+        icon_path = os.path.join(os.path.dirname(__file__), 'icon.png')
+        if os.path.exists(icon_path):
+            self.setWindowIcon(QtGui.QIcon(icon_path))
 
         self.thread: QtCore.QThread | None = None
         self.worker: TaskWorker | None = None
