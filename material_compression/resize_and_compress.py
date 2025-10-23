@@ -1,5 +1,4 @@
 import os
-import signal
 import time
 from material_compression.resizelib import resizeVTF
 
@@ -8,18 +7,6 @@ def resize_and_compress(folder, size):
     new_size = 0
     replace_count = 0
     startime = time.time()
-
-
-    def signal_handler(sig, frame):
-        if os.path.exists("crashfile.txt"):
-            os.remove("crashfile.txt")
-
-        print("Time taken:", round(time.time() - startime, 2), "seconds")
-        print("Cancelled by user.")
-        exit()
-
-
-    signal.signal(signal.SIGINT, signal_handler)
 
     invalidFiles = {}
     if os.path.exists("crashfile.txt"):
