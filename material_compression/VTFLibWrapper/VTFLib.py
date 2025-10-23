@@ -512,10 +512,6 @@ class VTFLib:
     ImageConvert.restype = None
 
     def convert(self, format):
-        print(
-            "Converting from {} to {}".format(
-                self.image_format().name,
-                VTFLibEnums.ImageFormat(format).name))
         new_size = self.compute_image_size(
             self.width(),
             self.height(),

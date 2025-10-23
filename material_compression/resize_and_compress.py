@@ -6,7 +6,7 @@ def resize_and_compress(folder, size):
     old_size = 0
     new_size = 0
     replace_count = 0
-    startime = time.time()
+    start_time = time.time()
 
     invalidFiles = {}
     if os.path.exists("crashfile.txt"):
@@ -56,5 +56,6 @@ def resize_and_compress(folder, size):
         print("Clamped to", size, "resolution.")
         print("Reduced size by ", round((1 - new_size / old_size) * 100, 2), "%")
         print("Reduced size by ", round((old_size - new_size) / 1000000, 2), "mbs")
-    print("Time taken:", round(time.time() - startime, 2), "seconds")
+    print("Time taken:", round(time.time() - start_time, 2), "seconds")
     print("="*60)
+    return old_size - new_size, replace_count

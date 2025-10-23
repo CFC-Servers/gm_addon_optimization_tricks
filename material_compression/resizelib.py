@@ -1,8 +1,6 @@
 from PIL import Image
 import material_compression.VTFLibWrapper.VTFLib as VTFLib
 import material_compression.VTFLibWrapper.VTFLibEnums as VTFLibEnums
-from ctypes import create_string_buffer
-
 from material_compression.VTFLibWrapper.VTFLibEnums import ImageFormat
 
 def resizeVTFImage(vtf_lib, path, max_size):
@@ -10,7 +8,7 @@ def resizeVTFImage(vtf_lib, path, max_size):
     h = vtf_lib.height()
     neww = w
     newh = h
-    format = vtf_lib.image_format()
+    img_format = vtf_lib.image_format()
 
     scale = 1
     if w > max_size or h > max_size:
@@ -19,11 +17,11 @@ def resizeVTFImage(vtf_lib, path, max_size):
         neww *= scale
         newh *= scale
 
-    if scale != 1 or format != ImageFormat.ImageFormatDXT1:
+    if scale != 1 or img_format != ImageFormat.ImageFormatDXT1:
         vtf_lib.image_load(path, False)
         def_options = vtf_lib.create_default_params_structure()
         image_data = vtf_lib.get_rgba8888()
-        image_data = bytes(image_data.contents) # Why would you crash here with no exception. I am sad >:(
+        image_data = bytes(image_data.contents)
 
         image = Image.frombytes("RGBA", (w, h), image_data)
         r, g, b, a = image.split()
@@ -32,12 +30,12 @@ def resizeVTFImage(vtf_lib, path, max_size):
         if a.getextrema()[1] == 255 and a.getextrema()[0] == 255:
             method = ImageFormat.ImageFormatDXT1
 
-        if scale == 1 and format == method:
+        if scale == 1 and img_format == method:
             return False
 
         if scale != 1:
             image = image.convert("RGB")
-            image_scaled = image.resize((int(neww), int(newh)))
+            image_scaled = image.resize((int(neww), int(newh)), resample=Image.Resampling.LANCZOS)
             image_a_scaled = a.resize((int(neww), int(newh)))
             r, g, b = image_scaled.split()
             colorImage = (r, g, b, image_a_scaled)

@@ -1,7 +1,5 @@
 import os
 
-# Removes unused model formats from a directory, such as .dx80.vtx, .xbox.vtx, .sw.vtx
-# These are effectively not used in gmod and can take up a lot of space
 
 def unused_model_formats(folder, remove=True):
     total_size = 0
@@ -14,20 +12,17 @@ def unused_model_formats(folder, remove=True):
         ".360.vtx"
     ]
 
-    for root, dirs, files in os.walk(folder):
+    for root, _, files in os.walk(folder):
         for file in files:
-            _, ext = os.path.splitext(file)
-            relative_path = os.path.relpath(root, folder)
-
-            for format in formats_to_remove:
-                if file.endswith(format):
-                    total_size += os.path.getsize(os.path.join(root, file))
+            for fmt in formats_to_remove:
+                if file.endswith(fmt):
+                    file_path = os.path.join(root, file)
+                    total_size += os.path.getsize(file_path)
                     if remove:
-                        os.remove(os.path.join(root, file))
-                        print("Removed", os.path.join(root, file))
+                        os.remove(file_path)
+                        print("Removed", file_path)
                     else:
-                        print("Found unused file:", os.path.join(root, file))
-                    
+                        print("Found unused file:", file_path)
                     count += 1
 
 
