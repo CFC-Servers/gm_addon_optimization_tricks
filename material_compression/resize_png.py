@@ -1,5 +1,3 @@
-# Lowers png resolution to under the specified size, useful for animated textures that were exported as pngs.
-
 import os
 from PIL import Image
 
@@ -12,8 +10,7 @@ def clamp_pngs(folder, max_size):
     for path, subdirs, files in os.walk(folder):
         for name in files:
             filepath = os.path.join(path, name)
-            filetype = name.split(".")[-1]
-            if filetype == "png":
+            if name.lower().endswith(".png"):
                 total_files += 1
                 original_size = os.path.getsize(filepath)
                 total_size += original_size
@@ -24,7 +21,7 @@ def clamp_pngs(folder, max_size):
                     scale = max_size / maxd
                     neww = int(w * scale)
                     newh = int(h * scale)
-                    image = image.resize((neww, newh))
+                    image = image.resize((neww, newh), resample=Image.Resampling.LANCZOS)
                     image.save(filepath, quality=95)
                     total_resized += os.path.getsize(filepath)
                     total_resized_files += 1
@@ -36,3 +33,4 @@ def clamp_pngs(folder, max_size):
     print("="*60)
     print(f"Resized {total_resized_files} files, {total_saved_mb} mb saved")
     print("="*60)
+    return total_size - total_resized, total_resized_files

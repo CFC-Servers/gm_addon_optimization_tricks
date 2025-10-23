@@ -1,7 +1,7 @@
 import os
-import signal
 import time
 from pydub import AudioSegment, silence
+
 
 def trim_single_audio_file(input_file, silence_thresh=-55, min_silence_len=50, fade_duration=200):
     """
@@ -92,14 +92,6 @@ def trim_empty_audio(folder, silence_thresh=-55, min_silence_len=50, fade_durati
     success_count = 0
     start_time = time.time()
     
-    def signal_handler(sig, frame):
-        if os.path.exists("trim_crashfile.txt"):
-            os.remove("trim_crashfile.txt")
-        print(f"\nTime taken: {round(time.time() - start_time, 2)} seconds")
-        print("Cancelled by user.")
-        exit()
-    
-    signal.signal(signal.SIGINT, signal_handler)
     
     # Handle crash recovery
     invalid_files = set()

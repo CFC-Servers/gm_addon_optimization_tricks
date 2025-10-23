@@ -1,5 +1,4 @@
 import os
-import signal
 import time
 from PIL import Image
 import material_compression.VTFLibWrapper.VTFLib as VTFLib
@@ -51,15 +50,6 @@ def remove_mipmaps(folder):
     processed_count = 0
     success_count = 0
     start_time = time.time()
-    
-    def signal_handler(sig, frame):
-        if os.path.exists("mipmap_crashfile.txt"):
-            os.remove("mipmap_crashfile.txt")
-        print(f"\nTime taken: {round(time.time() - start_time, 2)} seconds")
-        print("Cancelled by user.")
-        exit()
-    
-    signal.signal(signal.SIGINT, signal_handler)
     
     # Handle crash recovery
     invalid_files = set()
