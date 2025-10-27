@@ -10,4 +10,5 @@ This will create a virtual environment, install requirements, and launch the des
 ```bash
 python main.py
 ```
-<img width="982" height="752" alt="image" src="https://github.com/user-attachments/assets/2d17db49-d2c2-4e45-8a7c-6922145326cd" />
+
+<img width="982" height="752" alt="image" src="https://github.com/user-attachments/assets/d068b89f-aaf2-4ff6-bc1b-e783c99a47d4" />
