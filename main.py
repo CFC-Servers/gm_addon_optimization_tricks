@@ -108,41 +108,63 @@ class MainWindow(QtWidgets.QMainWindow):
         folder_row.addWidget(browse_btn)
         main_layout.addLayout(folder_row)
 
-        # Actions grid
-        actions_widget = QtWidgets.QWidget()
-        grid = QtWidgets.QGridLayout(actions_widget)
-        grid.setHorizontalSpacing(12)
-        grid.setVerticalSpacing(8)
+        # Legend
+        legend_label = QtWidgets.QLabel("💡 <span style='color: #4CAF50;'>Green buttons</span> generally have no downsides and can always be used.")
+        legend_label.setTextFormat(QtCore.Qt.RichText)
+        main_layout.addWidget(legend_label)
 
-        row = 0
-        def add_button(text, handler):
-            nonlocal row
+        # Actions organized in group boxes
+        actions_container = QtWidgets.QWidget()
+        actions_layout = QtWidgets.QVBoxLayout(actions_container)
+        actions_layout.setSpacing(12)
+
+        # Helper to add buttons to a grid
+        def add_button(grid, row, text, handler, recommended=False):
             btn = QtWidgets.QPushButton(text)
             btn.clicked.connect(handler)
+            if recommended:
+                btn.setStyleSheet("QPushButton { color: #4CAF50; font-weight: bold; }")
             grid.addWidget(btn, row // 2, row % 2)
-            row += 1
             return btn
 
-        # Texture / materials
-        add_button("Clamp VTF file sizes", self.on_clamp_vtf)
-        add_button("Use DXT for VTFs", self.on_use_dxt)
-        add_button("Remove mipmaps (viewmodel-friendly)", self.on_remove_mipmaps)
-        add_button("Clamp PNG file sizes", self.on_clamp_png)
-        add_button("Resave VTF files (autorefresh)", self.on_resave_vtf)
+        # Textures Materials Group
+        textures_group = QtWidgets.QGroupBox("Textures Materials")
+        textures_grid = QtWidgets.QGridLayout()
+        textures_grid.setHorizontalSpacing(12)
+        textures_grid.setVerticalSpacing(8)
+        add_button(textures_grid, 0, "Clamp VTF file sizes", self.on_clamp_vtf)
+        add_button(textures_grid, 1, "Use DXT for VTFs", self.on_use_dxt, recommended=True)
+        add_button(textures_grid, 2, "Remove mipmaps (viewmodel-friendly)", self.on_remove_mipmaps)
+        add_button(textures_grid, 3, "Clamp PNG file sizes", self.on_clamp_png, recommended=True)
+        add_button(textures_grid, 4, "Resave VTF files (autorefresh)", self.on_resave_vtf)
+        textures_group.setLayout(textures_grid)
+        actions_layout.addWidget(textures_group)
 
-        # Audio
-        add_button(".wav to .ogg (skips looped/cued)", self.on_wav_to_ogg)
-        add_button(".wav to .mp3 (skips looped/cued)", self.on_wav_to_mp3)
-        add_button(".mp3 to .ogg", self.on_mp3_to_ogg)
-        add_button("Trim empty audio tail", self.on_trim_empty_audio)
+        # Cleanup Utilities Group
+        cleanup_group = QtWidgets.QGroupBox("Cleanup Utilities")
+        cleanup_grid = QtWidgets.QGridLayout()
+        cleanup_grid.setHorizontalSpacing(12)
+        cleanup_grid.setVerticalSpacing(8)
+        add_button(cleanup_grid, 0, "Unused model formats (scan/remove)", self.on_unused_model_formats, recommended=True)
+        add_button(cleanup_grid, 1, "Find unused content (WIP)", self.on_unused_content, recommended=True)
+        add_button(cleanup_grid, 2, "Remove files already in game (HL2/CSS)", self.on_remove_game_files, recommended=True)
+        add_button(cleanup_grid, 3, "Find and copy content used by .vmf", self.on_find_map_content)
+        cleanup_group.setLayout(cleanup_grid)
+        actions_layout.addWidget(cleanup_group)
 
-        # Cleanup / mapping
-        add_button("Unused model formats (scan/remove)", self.on_unused_model_formats)
-        add_button("Find unused content (WIP)", self.on_unused_content)
-        add_button("Remove files already in game (HL2/CSS)", self.on_remove_game_files)
-        add_button("Find and copy content used by .vmf", self.on_find_map_content)
+        # Audio Compression Group
+        audio_group = QtWidgets.QGroupBox("Audio Compression")
+        audio_grid = QtWidgets.QGridLayout()
+        audio_grid.setHorizontalSpacing(12)
+        audio_grid.setVerticalSpacing(8)
+        add_button(audio_grid, 0, ".wav to .ogg (skips looped/cued)", self.on_wav_to_ogg)
+        add_button(audio_grid, 1, ".wav to .mp3 (skips looped/cued)", self.on_wav_to_mp3)
+        add_button(audio_grid, 2, ".mp3 to .ogg", self.on_mp3_to_ogg)
+        add_button(audio_grid, 3, "Trim empty audio tail", self.on_trim_empty_audio)
+        audio_group.setLayout(audio_grid)
+        actions_layout.addWidget(audio_group)
 
-        main_layout.addWidget(actions_widget)
+        main_layout.addWidget(actions_container)
 
         # Progress + Log
         progress_row = QtWidgets.QHBoxLayout()
