@@ -69,9 +69,27 @@ def extract_content_paths(vmf: srctools.VMF, vmf_folder: str = '', processed_ins
             instance_file = entity.get('file', '')
             if instance_file:
                 instance_count += 1
-                # Resolve the instance path relative to the current VMF folder
+                # Instance paths are relative to the maps folder, not the current VMF
+                # We need to find the maps folder in the VMF path and resolve from there
                 if vmf_folder:
-                    instance_path = os.path.normpath(os.path.join(vmf_folder, instance_file))
+                    # Try to find 'maps' folder in the path
+                    vmf_folder_normalized = os.path.normpath(vmf_folder)
+                    parts = vmf_folder_normalized.split(os.sep)
+                    
+                    # Find the last occurrence of 'maps' in the path
+                    maps_index = -1
+                    for i in range(len(parts) - 1, -1, -1):
+                        if parts[i].lower() == 'maps':
+                            maps_index = i
+                            break
+                    
+                    if maps_index >= 0:
+                        # Reconstruct path up to and including the maps folder
+                        maps_folder = os.sep.join(parts[:maps_index + 1])
+                        instance_path = os.path.normpath(os.path.join(maps_folder, instance_file))
+                    else:
+                        # Fallback: assume instance is relative to VMF location
+                        instance_path = os.path.normpath(os.path.join(vmf_folder, instance_file))
                 else:
                     instance_path = os.path.normpath(instance_file)
                 
@@ -103,8 +121,6 @@ def extract_content_paths(vmf: srctools.VMF, vmf_folder: str = '', processed_ins
                             print(f"    Warning: Failed to parse instance {instance_path}: {e}")
                     else:
                         print(f"    Warning: Instance file not found: {instance_path}")
-                else:
-                    print(f"  Skipping already processed instance: {instance_file}")
         
         # Check all entity properties
         for key, value in entity.items():
