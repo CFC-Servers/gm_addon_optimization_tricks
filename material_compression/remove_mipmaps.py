@@ -112,7 +112,6 @@ def remove_mipmaps(folder):
                     print(f"✓ {file_path} - {message} (saved {saved_mb:.2f} MB)")
                 else:
                     new_size += old_file_size  # No change in size
-                    print(f"⚠ {file_path} - {message}")
                 
                 # Clean up VTFLib instance
                 vtf_lib.shutdown()
