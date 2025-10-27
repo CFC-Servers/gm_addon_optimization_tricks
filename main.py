@@ -390,6 +390,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
 def main():
+    # Set AppUserModelID for Windows taskbar icon
+    if sys.platform == 'win32':
+        import ctypes
+        myappid = 'cfcservers.gmaddonoptimization.tools.1.0'
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+    
     app = QtWidgets.QApplication(sys.argv)
     window = MainWindow()
     window.show()
