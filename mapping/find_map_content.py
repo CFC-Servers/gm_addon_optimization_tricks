@@ -86,28 +86,10 @@ def extract_content_paths(vmf: srctools.VMF, vmf_folder: str = '', processed_ins
                             break
                     
                     if maps_index >= 0:
-                        # Get the path after 'maps' folder in the VMF path
-                        vmf_subpath_parts = parts[maps_index + 1:]
-                        instance_parts = instance_file_normalized.split(os.sep)
-                        
-                        # Check if the instance path starts with the same subpath as the VMF
-                        # to avoid duplication (e.g., both have darkrp/gm_cfc_v1)
-                        overlap = 0
-                        for i in range(min(len(vmf_subpath_parts), len(instance_parts))):
-                            if vmf_subpath_parts[i].lower() == instance_parts[i].lower():
-                                overlap += 1
-                            else:
-                                break
-                        
-                        # If there's overlap, use the VMF folder path and add only the unique part
-                        if overlap > 0:
-                            instance_path = os.path.join(vmf_folder_normalized, *instance_parts[overlap:])
-                        else:
-                            # No overlap, resolve relative to maps folder
-                            maps_folder = os.sep.join(parts[:maps_index + 1])
-                            instance_path = os.path.join(maps_folder, instance_file_normalized)
-                        
-                        instance_path = os.path.normpath(instance_path)
+                        # Reconstruct path up to and including the maps folder
+                        maps_folder = os.sep.join(parts[:maps_index + 1])
+                        # Instance paths are always relative to the maps folder
+                        instance_path = os.path.normpath(os.path.join(maps_folder, instance_file_normalized))
                     else:
                         # Fallback: assume instance is relative to VMF location
                         instance_path = os.path.normpath(os.path.join(vmf_folder, instance_file_normalized))
