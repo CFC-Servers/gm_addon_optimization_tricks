@@ -4,16 +4,21 @@ import shutil
 import re
 from typing import Set, Dict, List
 
-def extract_content_paths(vmf: srctools.VMF) -> Dict[str, Set[str]]:
+def extract_content_paths(vmf: srctools.VMF, vmf_folder: str = '', processed_instances: Set[str] = None) -> Dict[str, Set[str]]:
     """
-    Extract all content paths from a VMF file.
+    Extract all content paths from a VMF file, including content from instances.
     
     Args:
         vmf: Parsed VMF object
+        vmf_folder: Folder containing the VMF file (for resolving relative instance paths)
+        processed_instances: Set of already processed instance files to avoid infinite recursion
         
     Returns:
         Dictionary with content types as keys and sets of file paths as values
     """
+    if processed_instances is None:
+        processed_instances = set()
+    
     content = {
         'materials': set(),
         'models': set(),
@@ -52,11 +57,54 @@ def extract_content_paths(vmf: srctools.VMF) -> Dict[str, Set[str]]:
     
     print("Scanning VMF entities for content references...")
     entity_count = 0
+    instance_count = 0
     
     # Iterate through all entities in the VMF
     for entity in vmf.iter_ents():
         entity_count += 1
         classname = entity.get('classname', '')
+        
+        # Handle func_instance entities - these reference other VMF files
+        if classname == 'func_instance':
+            instance_file = entity.get('file', '')
+            if instance_file:
+                instance_count += 1
+                # Resolve the instance path relative to the current VMF folder
+                if vmf_folder:
+                    instance_path = os.path.normpath(os.path.join(vmf_folder, instance_file))
+                else:
+                    instance_path = os.path.normpath(instance_file)
+                
+                # Check if we've already processed this instance to avoid infinite recursion
+                if instance_path not in processed_instances:
+                    processed_instances.add(instance_path)
+                    print(f"  Found instance: {instance_file}")
+                    
+                    # Try to load and parse the instance VMF
+                    if os.path.exists(instance_path):
+                        try:
+                            print(f"    Parsing instance: {instance_path}")
+                            with open(instance_path, 'r', encoding='utf-8', errors='ignore') as f:
+                                instance_content = f.read()
+                            
+                            instance_kv = srctools.Keyvalues.parse(instance_content)
+                            instance_vmf = srctools.VMF.parse(instance_kv)
+                            
+                            # Recursively extract content from the instance
+                            instance_folder = os.path.dirname(instance_path)
+                            instance_content_dict = extract_content_paths(instance_vmf, instance_folder, processed_instances)
+                            
+                            # Merge the instance content with our content
+                            for content_type, paths in instance_content_dict.items():
+                                content[content_type].update(paths)
+                            
+                            print(f"    Instance content: {sum(len(paths) for paths in instance_content_dict.values())} files")
+                        except Exception as e:
+                            print(f"    Warning: Failed to parse instance {instance_path}: {e}")
+                    else:
+                        print(f"    Warning: Instance file not found: {instance_path}")
+                else:
+                    print(f"  Skipping already processed instance: {instance_file}")
         
         # Check all entity properties
         for key, value in entity.items():
@@ -120,7 +168,7 @@ def extract_content_paths(vmf: srctools.VMF) -> Dict[str, Set[str]]:
             if material and material != 'tools/toolsnodraw':
                 content['materials'].add(material)
     
-    print(f"Processed {entity_count} entities, {brush_count} brushes, {face_count} faces")
+    print(f"Processed {entity_count} entities ({instance_count} instances), {brush_count} brushes, {face_count} faces")
     
     return content
 
@@ -374,8 +422,11 @@ def find_map_content(all_content_folder: str, new_content_folder: str, map_file:
         print("Parsing VMF structure...")
         vmf = srctools.VMF.parse(kv_tree)
         
+        # Get the folder containing the VMF file for resolving relative instance paths
+        vmf_folder = os.path.dirname(os.path.abspath(map_file))
+        
         # Extract content paths
-        content = extract_content_paths(vmf)
+        content = extract_content_paths(vmf, vmf_folder)
         
         # Print summary
         print("\nContent found:")
