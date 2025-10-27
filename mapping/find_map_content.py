@@ -69,8 +69,10 @@ def extract_content_paths(vmf: srctools.VMF, vmf_folder: str = '', processed_ins
             instance_file = entity.get('file', '')
             if instance_file:
                 instance_count += 1
-                # Instance paths are relative to the maps folder, not the current VMF
-                # We need to find the maps folder in the VMF path and resolve from there
+                # Instance paths are relative to the maps folder
+                # Normalize the instance file path
+                instance_file_normalized = instance_file.replace('/', os.sep).replace('\\', os.sep)
+                
                 if vmf_folder:
                     # Try to find 'maps' folder in the path
                     vmf_folder_normalized = os.path.normpath(vmf_folder)
@@ -84,14 +86,33 @@ def extract_content_paths(vmf: srctools.VMF, vmf_folder: str = '', processed_ins
                             break
                     
                     if maps_index >= 0:
-                        # Reconstruct path up to and including the maps folder
-                        maps_folder = os.sep.join(parts[:maps_index + 1])
-                        instance_path = os.path.normpath(os.path.join(maps_folder, instance_file))
+                        # Get the path after 'maps' folder in the VMF path
+                        vmf_subpath_parts = parts[maps_index + 1:]
+                        instance_parts = instance_file_normalized.split(os.sep)
+                        
+                        # Check if the instance path starts with the same subpath as the VMF
+                        # to avoid duplication (e.g., both have darkrp/gm_cfc_v1)
+                        overlap = 0
+                        for i in range(min(len(vmf_subpath_parts), len(instance_parts))):
+                            if vmf_subpath_parts[i].lower() == instance_parts[i].lower():
+                                overlap += 1
+                            else:
+                                break
+                        
+                        # If there's overlap, use the VMF folder path and add only the unique part
+                        if overlap > 0:
+                            instance_path = os.path.join(vmf_folder_normalized, *instance_parts[overlap:])
+                        else:
+                            # No overlap, resolve relative to maps folder
+                            maps_folder = os.sep.join(parts[:maps_index + 1])
+                            instance_path = os.path.join(maps_folder, instance_file_normalized)
+                        
+                        instance_path = os.path.normpath(instance_path)
                     else:
                         # Fallback: assume instance is relative to VMF location
-                        instance_path = os.path.normpath(os.path.join(vmf_folder, instance_file))
+                        instance_path = os.path.normpath(os.path.join(vmf_folder, instance_file_normalized))
                 else:
-                    instance_path = os.path.normpath(instance_file)
+                    instance_path = os.path.normpath(instance_file_normalized)
                 
                 # Check if we've already processed this instance to avoid infinite recursion
                 if instance_path not in processed_instances:
