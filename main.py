@@ -113,17 +113,23 @@ class MainWindow(QtWidgets.QMainWindow):
         legend_label.setTextFormat(QtCore.Qt.RichText)
         main_layout.addWidget(legend_label)
 
+        # Tooltip tip
+        tip_label = QtWidgets.QLabel("💡 Hover over buttons to see more information about what they do.")
+        main_layout.addWidget(tip_label)
+
         # Actions organized in group boxes
         actions_container = QtWidgets.QWidget()
         actions_layout = QtWidgets.QVBoxLayout(actions_container)
         actions_layout.setSpacing(12)
 
         # Helper to add buttons to a grid
-        def add_button(grid, row, text, handler, recommended=False):
+        def add_button(grid, row, text, handler, recommended=False, tooltip=None):
             btn = QtWidgets.QPushButton(text)
             btn.clicked.connect(handler)
             if recommended:
                 btn.setStyleSheet("QPushButton { color: #4CAF50; font-weight: bold; }")
+            if tooltip:
+                btn.setToolTip(tooltip)
             grid.addWidget(btn, row // 2, row % 2)
             return btn
 
@@ -132,11 +138,16 @@ class MainWindow(QtWidgets.QMainWindow):
         textures_grid = QtWidgets.QGridLayout()
         textures_grid.setHorizontalSpacing(12)
         textures_grid.setVerticalSpacing(8)
-        add_button(textures_grid, 0, "Clamp VTF file sizes", self.on_clamp_vtf)
-        add_button(textures_grid, 1, "Use DXT for VTFs", self.on_use_dxt, recommended=True)
-        add_button(textures_grid, 2, "Remove mipmaps (viewmodel-friendly)", self.on_remove_mipmaps)
-        add_button(textures_grid, 3, "Clamp PNG file sizes", self.on_clamp_png, recommended=True)
-        add_button(textures_grid, 4, "Resave VTF files (autorefresh)", self.on_resave_vtf)
+        add_button(textures_grid, 0, "Clamp VTF file sizes", self.on_clamp_vtf, 
+                   tooltip="Resize VTF textures to a maximum size.\nHelps reduce file size without losing quality for most textures.\n512 is good for most usecases like player models, 1024/2048 for world textures.")
+        add_button(textures_grid, 1, "Use DXT for VTFs", self.on_use_dxt, recommended=True,
+                   tooltip="Convert VTF textures to DXT compression format. Reduces file size significantly with minimal quality loss.")
+        add_button(textures_grid, 2, "Remove mipmaps", self.on_remove_mipmaps,
+                   tooltip="Remove mipmaps from textures.\nUseful for closeup textures like viewmodel textures but may cause ugly texture shimmering on large textures viewed from a distance.")
+        add_button(textures_grid, 3, "Clamp PNG file sizes", self.on_clamp_png, recommended=True,
+                   tooltip="Resize PNG images to a maximum size.\nReduces file size for UI elements and other PNG assets.\nUsually PNG's don't need to be very large as they are often used for icons or UI elements.")
+        add_button(textures_grid, 4, "Resave VTF files (autorefresh)", self.on_resave_vtf,
+                   tooltip="Resave all VTF files to force the game to refresh cached textures.")
         textures_group.setLayout(textures_grid)
         actions_layout.addWidget(textures_group)
 
@@ -145,10 +156,14 @@ class MainWindow(QtWidgets.QMainWindow):
         cleanup_grid = QtWidgets.QGridLayout()
         cleanup_grid.setHorizontalSpacing(12)
         cleanup_grid.setVerticalSpacing(8)
-        add_button(cleanup_grid, 0, "Unused model formats (scan/remove)", self.on_unused_model_formats, recommended=True)
-        add_button(cleanup_grid, 1, "Find unused content (WIP)", self.on_unused_content, recommended=True)
-        add_button(cleanup_grid, 2, "Remove files already in game (HL2/CSS)", self.on_remove_game_files, recommended=True)
-        add_button(cleanup_grid, 3, "Find and copy content used by .vmf", self.on_find_map_content)
+        add_button(cleanup_grid, 0, "Unused model formats (scan/remove)", self.on_unused_model_formats, recommended=True,
+                   tooltip="Find and remove unused model format files (.phy, .vvd, .dx80.vtx, .dx90.vtx, .sw.vtx) that are unused in garry's mod.")
+        add_button(cleanup_grid, 1, "Find unused content (WIP)", self.on_unused_content, recommended=True,
+                   tooltip="Scan for content files that aren't referenced anywhere. WARNING: This may remove files that are actually used as it's still WIP!")
+        add_button(cleanup_grid, 2, "Remove files already in game (HL2/CSS)", self.on_remove_game_files, recommended=True,
+                   tooltip="Remove files that are already provided by base GMod.\nCan reduce size significantly for addons that include EP1/EP2/CSS content.")
+        add_button(cleanup_grid, 3, "Find and copy content used by .vmf", self.on_find_map_content,
+                   tooltip="Extract all content referenced by a VMF map file and copy it to a new folder for easy map packing.")
         cleanup_group.setLayout(cleanup_grid)
         actions_layout.addWidget(cleanup_group)
 
@@ -157,10 +172,14 @@ class MainWindow(QtWidgets.QMainWindow):
         audio_grid = QtWidgets.QGridLayout()
         audio_grid.setHorizontalSpacing(12)
         audio_grid.setVerticalSpacing(8)
-        add_button(audio_grid, 0, ".wav to .ogg (skips looped/cued)", self.on_wav_to_ogg)
-        add_button(audio_grid, 1, ".wav to .mp3 (skips looped/cued)", self.on_wav_to_mp3)
-        add_button(audio_grid, 2, ".mp3 to .ogg", self.on_mp3_to_ogg)
-        add_button(audio_grid, 3, "Trim empty audio tail", self.on_trim_empty_audio)
+        add_button(audio_grid, 0, ".wav to .ogg (skips looped/cued)", self.on_wav_to_ogg,
+                   tooltip="Convert WAV audio files to OGG format for better compression. Skips files with loop points or cue points.")
+        add_button(audio_grid, 1, ".wav to .mp3 (skips looped/cued)", self.on_wav_to_mp3,
+                   tooltip="Convert WAV audio files to MP3 format. Skips files with loop points or cue points.")
+        add_button(audio_grid, 2, ".mp3 to .ogg", self.on_mp3_to_ogg,
+                   tooltip="Convert MP3 audio files to OGG format. OGG is generally better for Garry's Mod.")
+        add_button(audio_grid, 3, "Trim empty audio tail", self.on_trim_empty_audio,
+                   tooltip="Remove silent/empty audio at the end of sound files to reduce file size.")
         audio_group.setLayout(audio_grid)
         actions_layout.addWidget(audio_group)
 
