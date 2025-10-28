@@ -351,7 +351,7 @@ def copy_content_files(content: Dict[str, Set[str]], source_folder: str, dest_fo
     print("Copying models...")
     for model_path in content['models']:
         model_base = model_path.replace('.mdl', '')
-        model_extensions = ['.mdl', '.vvd', '.vtx', '.phy']
+        model_extensions = ['.mdl', '.vvd', '.vtx', '.phy', '.dx90.vtx']
         
         copied_any = False
         for ext in model_extensions:
