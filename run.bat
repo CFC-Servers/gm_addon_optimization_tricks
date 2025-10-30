@@ -1,5 +1,8 @@
 @echo off
 
+REM fetch latest
+git pull
+
 REM Create a virtual env in a folder called "venv" if it doesn't exist
 if not exist venv (
     echo Creating virtual environment...
