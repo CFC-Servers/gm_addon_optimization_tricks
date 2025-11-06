@@ -1,5 +1,5 @@
 import os
-from resizelib import resizeVTF
+from resizelib import cleanupVTF
 
 # Edit these variables
 PATH_TO_FILE = r"garrysmod\addons\addon_name\materials\material_name.vtf"
@@ -19,7 +19,7 @@ name = os.path.basename(PATH_TO_FILE)
 filetype = name.split(".")[-1]
 if filetype == "vtf":
     old_size = os.path.getsize(PATH_TO_FILE)
-    resizeVTF(PATH_TO_FILE, CLAMP_SIZE)
+    cleanupVTF(PATH_TO_FILE, CLAMP_SIZE)
     new_size = os.path.getsize(PATH_TO_FILE)
 
 print("Clamped to", CLAMP_SIZE, "pixels.")

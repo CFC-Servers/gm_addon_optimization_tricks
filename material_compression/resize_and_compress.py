@@ -1,6 +1,6 @@
 import os
 import time
-from material_compression.resizelib import resizeVTF
+from material_compression.resizelib import cleanupVTF
 
 def resize_and_compress(folder, size):
     old_size = 0
@@ -8,35 +8,13 @@ def resize_and_compress(folder, size):
     replace_count = 0
     start_time = time.time()
 
-    invalidFiles = {}
-    if os.path.exists("crashfile.txt"):
-        with open("crashfile.txt", "r") as f:
-            invalidFile = f.read()
-            with open("blacklist.txt", "a") as file:
-                file.write(invalidFile + "\n")
-
-            print("Crash/exit detected! Last file processed:", invalidFile)
-            print("Try importing and exporting the VTF with VTFEdit to fix it.")
-
-        os.remove("crashfile.txt")
-
-    # A list with files that are blacklisted due to them crashing
-    if os.path.exists("blacklist.txt"):
-        with open("blacklist.txt", "r") as f:
-            for line in f.readlines():
-                print("Loading file from blacklist:", line.strip())
-                invalidFiles[line.strip()] = True
-
     for path, subdirs, files in os.walk(folder):
         for name in files:
-            if not name.endswith(".vtf") or (os.path.join(path, name) in invalidFiles):
+            if not name.endswith(".vtf"):
                 continue
 
-            with open("crashfile.txt", "w") as f:
-                f.write(os.path.join(path, name))
-
             old_size_temp = os.path.getsize(os.path.join(path, name))
-            converted = resizeVTF(os.path.join(path, name), size)
+            converted = cleanupVTF(os.path.join(path, name), size)
             if converted:
                 replace_count += 1
                 new_size += os.path.getsize(os.path.join(path, name))
@@ -44,9 +22,6 @@ def resize_and_compress(folder, size):
             else:
                 new_size += old_size_temp
                 old_size += old_size_temp
-
-    if os.path.exists("crashfile.txt"):
-        os.remove("crashfile.txt")
 
     print("="*60)
     print("Replaced", replace_count, "files.")

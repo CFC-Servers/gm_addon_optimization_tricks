@@ -1,47 +1,6 @@
 import os
 import time
-from PIL import Image
-import material_compression.VTFLibWrapper.VTFLib as VTFLib
-import material_compression.VTFLibWrapper.VTFLibEnums as VTFLibEnums
-from material_compression.VTFLibWrapper.VTFLibEnums import ImageFormat
-
-def strip_mipmaps_from_vtf(vtf_lib, path):
-    """Strip mipmaps from a single VTF file while preserving all other properties"""
-    try:
-        # Load the VTF file
-        vtf_lib.image_load(path, False)
-        
-        # Get current properties
-        w = vtf_lib.width()
-        h = vtf_lib.height()
-        current_format = vtf_lib.image_format()
-        current_flags = vtf_lib.get_image_flags()
-        mipmap_count = vtf_lib.mipmap_count()
-        
-        # Skip if already has no mipmaps
-        if mipmap_count <= 1:
-            return False, f"Already has no mipmaps ({mipmap_count})"
-        
-        # Get the main image data (mipmap level 0)
-        image_data = vtf_lib.get_rgba8888()
-        image_data = bytes(image_data.contents)
-        
-        # Create new VTF with same properties but no mipmaps
-        def_options = vtf_lib.create_default_params_structure()
-        def_options.ImageFormat = current_format
-        def_options.Flags = current_flags.value if hasattr(current_flags, 'value') else current_flags
-        def_options.Mipmaps = 0  # Remove mipmaps
-        def_options.Resize = 0
-        
-        # Create the new VTF
-        if vtf_lib.image_create_single(w, h, image_data, def_options):
-            vtf_lib.image_save(path)
-            return True, f"Stripped {mipmap_count} mipmaps"
-        else:
-            return False, f"Failed to create new VTF: {vtf_lib.get_last_error()}"
-            
-    except Exception as e:
-        return False, f"Error processing file: {str(e)}"
+from sourcepp import vtfpp
 
 def remove_mipmaps(folder):
     """Remove mipmaps from all VTF files in the specified folder"""
@@ -51,80 +10,36 @@ def remove_mipmaps(folder):
     success_count = 0
     start_time = time.time()
     
-    # Handle crash recovery
-    invalid_files = set()
-    if os.path.exists("mipmap_crashfile.txt"):
-        with open("mipmap_crashfile.txt", "r") as f:
-            crash_file = f.read().strip()
-            with open("mipmap_blacklist.txt", "a") as file:
-                file.write(crash_file + "\n")
-            print(f"Crash detected! Last file processed: {crash_file}")
-            print("File has been blacklisted. Try manually fixing it with VTFEdit.")
-        os.remove("mipmap_crashfile.txt")
-    
-    # Load blacklist
-    if os.path.exists("mipmap_blacklist.txt"):
-        with open("mipmap_blacklist.txt", "r") as f:
-            for line in f.readlines():
-                line = line.strip()
-                if line:
-                    invalid_files.add(line)
-                    print(f"Blacklisted file: {line}")
-    
     print(f"Scanning for VTF files in: {folder}")
     print("Removing mipmaps from VTF files...")
     
-    # Process all VTF files
     for root, dirs, files in os.walk(folder):
         for filename in files:
             if not filename.endswith(".vtf"):
                 continue
                 
             file_path = os.path.join(root, filename)
+
+            old_file_size = os.path.getsize(file_path)
+            old_size += old_file_size
             
-            # Skip blacklisted files
-            if file_path in invalid_files:
-                print(f"Skipping blacklisted file: {file_path}")
+            vtf = vtfpp.VTF(file_path)
+            old_mipcount = vtf.mip_count
+            if old_mipcount <= 1:
+                new_size += old_file_size
+                processed_count += 1
                 continue
             
-            # Create crash file for recovery
-            with open("mipmap_crashfile.txt", "w") as f:
-                f.write(file_path)
+            vtf.mip_count = 0
+            vtf.bake_to_file(file_path)
             
-            try:
-                # Get original file size
-                old_file_size = os.path.getsize(file_path)
-                old_size += old_file_size
-                
-                # Create VTFLib instance for this file
-                vtf_lib = VTFLib.VTFLib()
-                
-                # Process the file
-                success, message = strip_mipmaps_from_vtf(vtf_lib, file_path)
-                processed_count += 1
-                
-                if success:
-                    success_count += 1
-                    new_file_size = os.path.getsize(file_path)
-                    new_size += new_file_size
-                    saved_bytes = old_file_size - new_file_size
-                    saved_mb = saved_bytes / (1024 * 1024)
-                    print(f"✓ {file_path} - {message} (saved {saved_mb:.2f} MB)")
-                else:
-                    new_size += old_file_size  # No change in size
-                
-                # Clean up VTFLib instance
-                vtf_lib.shutdown()
-                
-            except Exception as e:
-                print(f"✗ {file_path} - Error: {str(e)}")
-                new_size += old_file_size  # No change in size
+            success_count += 1
+            new_file_size = os.path.getsize(file_path)
+            new_size += new_file_size
+            saved_bytes = old_file_size - new_file_size
+            saved_mb = saved_bytes / (1024 * 1024)
+            print(f"✓ {file_path} - {old_mipcount} -> 0 (saved {saved_mb:.2f} MB)")
     
-    # Clean up crash file
-    if os.path.exists("mipmap_crashfile.txt"):
-        os.remove("mipmap_crashfile.txt")
-    
-    # Print summary
     print("="*60)
     print(f"Files processed: {processed_count}")
     print(f"Files modified: {success_count}")

@@ -1,14 +1,11 @@
 from PIL import Image
-import material_compression.VTFLibWrapper.VTFLib as VTFLib
-import material_compression.VTFLibWrapper.VTFLibEnums as VTFLibEnums
-from material_compression.VTFLibWrapper.VTFLibEnums import ImageFormat
+from sourcepp import vtfpp
 
-def resizeVTFImage(vtf_lib, path, max_size):
-    w = vtf_lib.width()
-    h = vtf_lib.height()
+def resizeVTFImage(vtf: vtfpp.VTF, path: str, max_size: int = 1024, best_format: vtfpp.ImageFormat = vtfpp.ImageFormat.DXT1) -> bool:
+    w = vtf.width
+    h = vtf.height
     neww = w
     newh = h
-    img_format = vtf_lib.image_format()
 
     scale = 1
     if w > max_size or h > max_size:
@@ -17,54 +14,35 @@ def resizeVTFImage(vtf_lib, path, max_size):
         neww *= scale
         newh *= scale
 
-    if scale != 1 or img_format != ImageFormat.ImageFormatDXT1:
-        vtf_lib.image_load(path, False)
-        def_options = vtf_lib.create_default_params_structure()
-        image_data = vtf_lib.get_rgba8888()
-        image_data = bytes(image_data.contents)
-
-        image = Image.frombytes("RGBA", (w, h), image_data)
-        r, g, b, a = image.split()
-
-        method = ImageFormat.ImageFormatDXT5
-        if a.getextrema()[1] == 255 and a.getextrema()[0] == 255:
-            method = ImageFormat.ImageFormatDXT1
-
-        if scale == 1 and img_format == method:
-            return False
-
-        if scale != 1:
-            image = image.convert("RGB")
-            image_scaled = image.resize((int(neww), int(newh)), resample=Image.Resampling.LANCZOS)
-            image_a_scaled = a.resize((int(neww), int(newh)))
-            r, g, b = image_scaled.split()
-            colorImage = (r, g, b, image_a_scaled)
-            image = Image.merge('RGBA', colorImage)
-
-        new_image_data = image.tobytes()
-
-        def_options.ImageFormat = method
-        def_options.Flags |= VTFLibEnums.ImageFlag.ImageFlagEightBitAlpha
-        def_options.Resize = 1
-
-        vtf_lib.image_create_single(int(neww), int(newh), new_image_data, def_options)
-
-        vtf_lib.image_save(path)
-
-        print(scale != 1 and "Resized" or "Converted", path, "successfully:", w, "x", h, "->", int(neww), "x", int(newh))
+    if scale != 1:
+        vtf.set_size(int(neww), int(newh), vtfpp.ImageConversion.ResizeFilter.NICE)
+        vtf.bake_to_file(path)
         return True
     return False
 
 
-def resizeVTF(path, max_size) -> bool:
+def cleanupVTF(path: str, max_size: int = 9999) -> bool:
     if not path.endswith(".vtf"):
         return False
     
-    vtf_lib = VTFLib.VTFLib() # Give each run it's own vtflib instance so we can possibly run them in parallel later on.
-    vtf_lib.image_load(path, True)
+    vtf = vtfpp.VTF(path)
 
-    if vtf_lib.frame_count() == 1:
-        return resizeVTFImage(vtf_lib, path, max_size)
-    else:
+    image_data = vtf.get_image_data_as_rgba8888(0)
+    image = Image.frombytes("RGBA", (vtf.width, vtf.height), image_data)
+    _, _, _, a = image.split()
+
+    best_format = vtfpp.ImageFormat.DXT1
+    if a.getextrema()[0] < 255:
+        best_format = vtfpp.ImageFormat.DXT5
+
+    if vtf.format != best_format:
+        vtf.set_format(best_format)
+
+    if vtf.frame_count > 1:
         print("Skipping", path, "because it has multiple frames.")
         return False
+
+    if vtf.width > max_size or vtf.height > max_size:
+        return resizeVTFImage(vtf, path, max_size, best_format)
+
+    return False
