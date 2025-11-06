@@ -427,7 +427,11 @@ class MainWindow(QtWidgets.QMainWindow):
         folder = self.ensure_folder()
         if not folder:
             return
-        self.start_task("Trim empty audio", trim_empty_audio, folder)
+        
+        def task():
+            return trim_empty_audio(folder, progress_callback=self.worker.progress.emit)
+        
+        self.start_task("Trim empty audio", task, determinate=True)
 
     def on_find_map_content(self):
         folder = self.ensure_folder()

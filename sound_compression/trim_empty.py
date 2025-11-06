@@ -76,7 +76,7 @@ def trim_single_audio_file(input_file, silence_thresh=-55, min_silence_len=50, f
     except Exception as e:
         return False, f"Error processing file: {str(e)}", 0
 
-def trim_empty_audio(folder, silence_thresh=-55, min_silence_len=50, fade_duration=200):
+def trim_empty_audio(folder, silence_thresh=-55, min_silence_len=50, fade_duration=200, progress_callback=None):
     """
     Trim silence from the end of all audio files (WAV, MP3, OGG) in the specified folder and apply fade-out.
     
@@ -85,6 +85,7 @@ def trim_empty_audio(folder, silence_thresh=-55, min_silence_len=50, fade_durati
         silence_thresh (int): Silence threshold in dBFS. Default -55 dB.
         min_silence_len (int): Minimum length of silence (ms) to trim. Default 50 ms.
         fade_duration (int): Duration of fade-out effect in milliseconds. Default 200 ms.
+        progress_callback: Optional callback function for progress updates (current, total).
     """
     old_size = 0
     new_size = 0
@@ -95,6 +96,17 @@ def trim_empty_audio(folder, silence_thresh=-55, min_silence_len=50, fade_durati
     print(f"Scanning for audio files in: {folder}")
     print("Trimming silence from end of audio files (WAV, MP3, OGG) with fade-out...")
     
+    # First pass: collect all audio files
+    audio_files = []
+    if progress_callback:
+        for root, dirs, files in os.walk(folder):
+            for filename in files:
+                file_ext = filename.lower()
+                if file_ext.endswith(".wav") or file_ext.endswith(".mp3") or file_ext.endswith(".ogg"):
+                    audio_files.append(os.path.join(root, filename))
+        total_files = len(audio_files)
+        current_file = 0
+    
     # Process all audio files
     for root, dirs, files in os.walk(folder):
         for filename in files:
@@ -103,6 +115,10 @@ def trim_empty_audio(folder, silence_thresh=-55, min_silence_len=50, fade_durati
                 continue
                 
             file_path = os.path.join(root, filename)
+            
+            if progress_callback:
+                current_file += 1
+                progress_callback(current_file, total_files)
             
             try:
                 # Get original file size
@@ -121,7 +137,6 @@ def trim_empty_audio(folder, silence_thresh=-55, min_silence_len=50, fade_durati
                     print(f"✓ {file_path} - {message} (saved {saved_mb:.2f} MB)")
                 else:
                     new_size += old_file_size  # No change in size
-                    print(f"⚠ {file_path} - {message}")
                 
             except Exception as e:
                 print(f"✗ {file_path} - Error: {str(e)}")
