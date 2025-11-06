@@ -17,6 +17,7 @@ def resizeVTFImage(vtf: vtfpp.VTF, path: str, max_size: int = 1024, best_format:
     if scale != 1:
         vtf.set_size(int(neww), int(newh), vtfpp.ImageConversion.ResizeFilter.NICE)
         vtf.bake_to_file(path)
+        print(f"✓ {path} - resized from {w}x{h} to {int(neww)}x{int(newh)}")
         return True
     return False
 
@@ -35,14 +36,23 @@ def cleanupVTF(path: str, max_size: int = 9999) -> bool:
     if a.getextrema()[0] < 255:
         best_format = vtfpp.ImageFormat.DXT5
 
+    format_changed = False
     if vtf.format != best_format:
         vtf.set_format(best_format)
+        format_changed = True
 
     if vtf.frame_count > 1:
         print("Skipping", path, "because it has multiple frames.")
+        if format_changed:
+            vtf.bake_to_file(path)
+            return True
         return False
 
     if vtf.width > max_size or vtf.height > max_size:
         return resizeVTFImage(vtf, path, max_size, best_format)
+
+    if format_changed:
+        vtf.bake_to_file(path)
+        return True
 
     return False
