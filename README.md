@@ -60,5 +60,4 @@ If you prefer to run it manually:
 
 ## Credits
 - Originally made in collaboration with [@CFC-Servers](https://github.com/CFC-Servers)
-- [sourcepp](https://github.com/craftablescience/sourcepp) python library
-- [VTFEdit-Reloaded](https://github.com/Sky-rym/VTFEdit-Reloaded) dlls for vtf editing 
+- [sourcepp](https://github.com/craftablescience/sourcepp) python library for various source format handling
