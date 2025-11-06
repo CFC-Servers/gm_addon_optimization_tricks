@@ -92,27 +92,6 @@ def trim_empty_audio(folder, silence_thresh=-55, min_silence_len=50, fade_durati
     success_count = 0
     start_time = time.time()
     
-    
-    # Handle crash recovery
-    invalid_files = set()
-    if os.path.exists("trim_crashfile.txt"):
-        with open("trim_crashfile.txt", "r") as f:
-            crash_file = f.read().strip()
-            with open("trim_blacklist.txt", "a") as file:
-                file.write(crash_file + "\n")
-            print(f"Crash detected! Last file processed: {crash_file}")
-            print("File has been blacklisted. Try manually fixing it.")
-        os.remove("trim_crashfile.txt")
-    
-    # Load blacklist
-    if os.path.exists("trim_blacklist.txt"):
-        with open("trim_blacklist.txt", "r") as f:
-            for line in f.readlines():
-                line = line.strip()
-                if line:
-                    invalid_files.add(line)
-                    print(f"Blacklisted file: {line}")
-    
     print(f"Scanning for audio files in: {folder}")
     print("Trimming silence from end of audio files (WAV, MP3, OGG) with fade-out...")
     
@@ -124,15 +103,6 @@ def trim_empty_audio(folder, silence_thresh=-55, min_silence_len=50, fade_durati
                 continue
                 
             file_path = os.path.join(root, filename)
-            
-            # Skip blacklisted files
-            if file_path in invalid_files:
-                print(f"Skipping blacklisted file: {file_path}")
-                continue
-            
-            # Create crash file for recovery
-            with open("trim_crashfile.txt", "w") as f:
-                f.write(file_path)
             
             try:
                 # Get original file size
@@ -156,10 +126,6 @@ def trim_empty_audio(folder, silence_thresh=-55, min_silence_len=50, fade_durati
             except Exception as e:
                 print(f"✗ {file_path} - Error: {str(e)}")
                 new_size += old_file_size  # No change in size
-    
-    # Clean up crash file
-    if os.path.exists("trim_crashfile.txt"):
-        os.remove("trim_crashfile.txt")
     
     # Print summary
     print("="*60)
