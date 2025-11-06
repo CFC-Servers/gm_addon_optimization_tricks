@@ -48,6 +48,7 @@ def redirect_stdout_stderr(callback):
 class TaskWorker(QtCore.QObject):
     started = QtCore.Signal(str)
     log = QtCore.Signal(str)
+    progress = QtCore.Signal(int, int)
     finished = QtCore.Signal(str)
     failed = QtCore.Signal(str)
 
@@ -256,11 +257,16 @@ class MainWindow(QtWidgets.QMainWindow):
         path = QtWidgets.QFileDialog.getExistingDirectory(self, title)
         return path or None
 
-    def start_task(self, description: str, fn, *args, **kwargs):
+    def start_task(self, description: str, fn, *args, determinate: bool = False, **kwargs):
         if self.thread is not None:
             QtWidgets.QMessageBox.information(self, "Busy", "A task is already running. Please wait for it to finish.")
             return
         self.progress.setVisible(True)
+        if determinate:
+            self.progress.setRange(0, 100)
+            self.progress.setValue(0)
+        else:
+            self.progress.setRange(0, 0)
         self.log_append(f"Starting: {description}\n")
 
         self.thread = QtCore.QThread()
@@ -270,6 +276,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.thread.started.connect(self.worker.run)
         self.worker.started.connect(lambda msg: None)
         self.worker.log.connect(self.log_append)
+        self.worker.progress.connect(self.on_progress_update)
         self.worker.finished.connect(self.on_task_finished)
         self.worker.failed.connect(self.on_task_failed)
         self.worker.finished.connect(self.thread.quit)
@@ -282,6 +289,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.thread = None
         self.worker = None
         self.progress.setVisible(False)
+
+    def on_progress_update(self, current: int, total: int):
+        """Update progress bar with current/total values"""
+        if total > 0:
+            self.progress.setRange(0, total)
+            self.progress.setValue(current)
+        else:
+            # If total is 0, use indeterminate mode
+            self.progress.setRange(0, 0)
 
     def on_task_finished(self, msg: str):
         self.log_append(msg + "\n")
@@ -303,11 +319,11 @@ class MainWindow(QtWidgets.QMainWindow):
         remove = self.ask_yes_no("Remove models?", "Do you want to remove the unused model formats?")
 
         def task():
-            size, count = unused_model_formats(folder, remove)
+            size, count = unused_model_formats(folder, remove, progress_callback=self.worker.progress.emit)
             print((f"Removed {count} unused model formats, saving {format_size(size)}") if remove else (f"Found {count} unused model formats, taking up {format_size(size)}"))
             return size, count
 
-        self.start_task("Unused model formats", task)
+        self.start_task("Unused model formats", task, determinate=True)
 
     def on_unused_content(self):
         folder = self.ensure_folder()
@@ -341,20 +357,32 @@ class MainWindow(QtWidgets.QMainWindow):
         size = self.ask_int("Clamp VTF size", "Clamp size (pixels)", default=1024)
         if size is None:
             return
-        self.start_task("Clamp VTF file sizes", resize_and_compress, folder, int(size))
+        
+        def task():
+            return resize_and_compress(folder, int(size), progress_callback=self.worker.progress.emit)
+        
+        self.start_task("Clamp VTF file sizes", task, determinate=True)
 
     def on_use_dxt(self):
         folder = self.ensure_folder()
         if not folder:
             return
         # Use a very large clamp to force DXT path
-        self.start_task("Use DXT for VTFs", resize_and_compress, folder, 1_000_000)
+        
+        def task():
+            return resize_and_compress(folder, 1_000_000, progress_callback=self.worker.progress.emit)
+        
+        self.start_task("Use DXT for VTFs", task, determinate=True)
 
     def on_remove_mipmaps(self):
         folder = self.ensure_folder()
         if not folder:
             return
-        self.start_task("Remove mipmaps", remove_mipmaps, folder)
+        
+        def task():
+            return remove_mipmaps(folder, progress_callback=self.worker.progress.emit)
+        
+        self.start_task("Remove mipmaps", task, determinate=True)
 
     def on_clamp_png(self):
         folder = self.ensure_folder()
@@ -363,19 +391,31 @@ class MainWindow(QtWidgets.QMainWindow):
         size = self.ask_int("Clamp PNG size", "Clamp size (pixels)", default=512)
         if size is None:
             return
-        self.start_task("Clamp PNG file sizes", clamp_pngs, folder, int(size))
+        
+        def task():
+            return clamp_pngs(folder, int(size), progress_callback=self.worker.progress.emit)
+        
+        self.start_task("Clamp PNG file sizes", task, determinate=True)
 
     def on_wav_to_mp3(self):
         folder = self.ensure_folder()
         if not folder:
             return
-        self.start_task(".wav to .mp3", wav_to_mp3, folder)
+        
+        def task():
+            return wav_to_mp3(folder, progress_callback=self.worker.progress.emit)
+        
+        self.start_task(".wav to .mp3", task, determinate=True)
 
     def on_wav_to_ogg(self):
         folder = self.ensure_folder()
         if not folder:
             return
-        self.start_task(".wav to .ogg", wav_to_ogg, folder)
+        
+        def task():
+            return wav_to_ogg(folder, progress_callback=self.worker.progress.emit)
+        
+        self.start_task(".wav to .ogg", task, determinate=True)
 
     def on_mp3_to_ogg(self):
         folder = self.ensure_folder()

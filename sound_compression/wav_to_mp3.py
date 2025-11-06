@@ -6,17 +6,31 @@ from wavinfo import WavInfoReader
 # Requires ffmpeg to be installed and added to PATH
 # https://github.com/jiaaro/pydub?tab=readme-ov-file#getting-ffmpeg-set-up
 
-def wav_to_mp3(folder):
+def wav_to_mp3(folder, progress_callback=None):
     replaced_files = {}
     old_size = 0
     new_size = 0
     replace_count = 0
+
+    # First pass: count WAV files
+    wav_files = []
+    if progress_callback:
+        for path, subdirs, files in os.walk(folder):
+            for name in files:
+                if name.split(".")[-1] == "wav":
+                    wav_files.append(os.path.join(path, name))
+        total_wavs = len(wav_files)
+        processed = 0
 
     for path, subdirs, files in os.walk(folder):
         for name in files:
             filepath = os.path.join(path, name)
             filetype = name.split(".")[-1]
             if filetype == "wav":
+                if progress_callback:
+                    processed += 1
+                    progress_callback(processed, total_wavs)
+                
                 wav_info = WavInfoReader(filepath)
                 if wav_info.cues == None:
                     continue

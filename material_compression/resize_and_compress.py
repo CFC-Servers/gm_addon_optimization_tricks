@@ -2,11 +2,20 @@ import os
 import time
 from material_compression.resizelib import cleanupVTF
 
-def resize_and_compress(folder, size):
+def resize_and_compress(folder, size, progress_callback=None):
     old_size = 0
     new_size = 0
     replace_count = 0
     start_time = time.time()
+
+    # First pass: count total files
+    total_files = 0
+    if progress_callback:
+        for path, subdirs, files in os.walk(folder):
+            for name in files:
+                if name.endswith(".vtf"):
+                    total_files += 1
+        processed = 0
 
     for path, subdirs, files in os.walk(folder):
         for name in files:
@@ -22,6 +31,10 @@ def resize_and_compress(folder, size):
             else:
                 new_size += old_size_temp
                 old_size += old_size_temp
+            
+            if progress_callback:
+                processed += 1
+                progress_callback(processed, total_files)
 
     print("="*60)
     print("Replaced", replace_count, "files.")
