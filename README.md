@@ -9,7 +9,7 @@ Desktop tool to optimize Garry's Mod addons/maps
 - Easy-to-use desktop interface
 
 ## Prerequisites
-- Python 3.12 or higher
+- Python 3.10 or higher
 - Git (for cloning the repository)
 
 ## Installation

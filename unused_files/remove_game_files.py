@@ -120,11 +120,11 @@ def remove_game_files(folder, gamefolder, remove=True):
                 if remove:
                     try:
                         os.rmdir(dir_path)
-                        print(f"Removed empty directory: {os.path.relpath(dir_path, folder).replace('\\', '/')}")
+                        print("Removed empty directory: %s" % os.path.relpath(dir_path, folder).replace('\\', '/'))
                     except Exception as e:
                         print(f"Failed to remove directory {dir_path}: {e}")
                 else:
-                    print(f"Would remove empty directory: {os.path.relpath(dir_path, folder).replace('\\', '/')}")
+                    print("Would remove empty directory: %s" % os.path.relpath(dir_path, folder).replace('\\', '/'))
     
     print("="*60)
     if remove:
