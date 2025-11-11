@@ -92,6 +92,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.thread: QtCore.QThread | None = None
         self.worker: TaskWorker | None = None
+        self.initial_folder_size: int = 0
+        self.current_folder_size: int = 0
 
         central = QtWidgets.QWidget()
         self.setCentralWidget(central)
@@ -108,6 +110,14 @@ class MainWindow(QtWidgets.QMainWindow):
         folder_row.addWidget(self.folder_edit, 1)
         folder_row.addWidget(browse_btn)
         main_layout.addLayout(folder_row)
+
+        # Folder size counter
+        size_row = QtWidgets.QHBoxLayout()
+        self.size_label = QtWidgets.QLabel("Folder size: Not calculated yet")
+        self.size_label.setStyleSheet("QLabel { padding: 5px; }")
+        size_row.addWidget(self.size_label)
+        size_row.addStretch()
+        main_layout.addLayout(size_row)
 
         # Legend
         legend_label = QtWidgets.QLabel("💡 <span style='color: #4CAF50;'>Green buttons</span> generally have no downsides and can always be used.")
@@ -240,6 +250,7 @@ class MainWindow(QtWidgets.QMainWindow):
         folder = QtWidgets.QFileDialog.getExistingDirectory(self, "Select content folder")
         if folder:
             self.folder_edit.setText(folder)
+            self.calculate_initial_folder_size(folder)
 
     def ask_int(self, title: str, label: str, default: int = 1024) -> int | None:
         value, ok = QtWidgets.QInputDialog.getInt(self, title, label, value=default, minValue=1, maxValue=10_000_000, step=1)
@@ -301,15 +312,82 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def on_task_finished(self, msg: str):
         self.log_append(msg + "\n")
+        self.update_folder_size()
 
     def on_task_failed(self, msg: str):
         self.log_append(msg + "\n")
+        self.update_folder_size()
         QtWidgets.QMessageBox.critical(self, "Task failed", msg)
 
     def log_append(self, text: str):
         self.log.moveCursor(QtGui.QTextCursor.End)
         self.log.insertPlainText(text)
         self.log.moveCursor(QtGui.QTextCursor.End)
+
+    def calculate_folder_size(self, folder: str) -> int:
+        """Calculate total size of all files in folder"""
+        total_size = 0
+        try:
+            for root, _, files in os.walk(folder):
+                for filename in files:
+                    file_path = os.path.join(root, filename)
+                    try:
+                        total_size += os.path.getsize(file_path)
+                    except (OSError, FileNotFoundError):
+                        pass
+        except Exception as e:
+            print(f"Error calculating folder size: {e}")
+        return total_size
+
+    def calculate_initial_folder_size(self, folder: str):
+        """Calculate and store initial folder size"""
+        self.size_label.setText("Calculating folder size...")
+        QtWidgets.QApplication.processEvents()
+        
+        size = self.calculate_folder_size(folder)
+        self.initial_folder_size = size
+        self.current_folder_size = size
+        self.update_size_label()
+
+    def update_folder_size(self):
+        """Recalculate current folder size after an operation"""
+        folder = self.current_folder()
+        if folder and os.path.exists(folder):
+            self.current_folder_size = self.calculate_folder_size(folder)
+            self.update_size_label()
+
+    def update_size_label(self):
+        """Update the size label with initial and current sizes"""
+        if self.initial_folder_size == 0:
+            self.size_label.setText("Folder size: Not folder selected")
+            return
+        
+        initial_str = format_size(self.initial_folder_size)
+        current_str = format_size(self.current_folder_size)
+        
+        if self.initial_folder_size == self.current_folder_size:
+            self.size_label.setText(f"Folder size: {current_str}")
+        else:
+            diff = self.initial_folder_size - self.current_folder_size
+            diff_str = format_size(diff)
+            percentage = (diff / self.initial_folder_size * 100) if self.initial_folder_size > 0 else 0
+            
+            if diff > 0:
+                # Size reduced
+                self.size_label.setText(
+                    f"Folder size: <span style='color: #888;'>{initial_str}</span> → "
+                    f"<b>{current_str}</b> "
+                    f"<span style='color: #4CAF50;'>(−{diff_str}, −{percentage:.2f}%)</span>"
+                )
+            else:
+                # Size increased (shouldn't happen normally)
+                self.size_label.setText(
+                    f"Folder size: <span style='color: #888;'>{initial_str}</span> → "
+                    f"<b>{current_str}</b> "
+                    f"<span style='color: #f44336;'>(+{format_size(-diff)})</span>"
+                )
+        
+        self.size_label.setTextFormat(QtCore.Qt.RichText)
 
     # ------------- Action handlers -------------
     def on_unused_model_formats(self):
