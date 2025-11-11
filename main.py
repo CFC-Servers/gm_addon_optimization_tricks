@@ -173,8 +173,8 @@ class MainWindow(QtWidgets.QMainWindow):
                    tooltip="Scan for content files that aren't referenced anywhere. WARNING: This may remove files that are actually used as it's still WIP!")
         add_button(cleanup_grid, 2, "Remove files already in game (HL2/CSS)", self.on_remove_game_files, recommended=True,
                    tooltip="Remove files that are already provided by base GMod.\nCan reduce size significantly for addons that include EP1/EP2/CSS content.")
-        add_button(cleanup_grid, 3, "Find and copy content used by .vmf", self.on_find_map_content,
-                   tooltip="Extract all content referenced by a VMF map file and copy it to a new folder for easy map packing.")
+        add_button(cleanup_grid, 3, "Find and copy content used by .bsp", self.on_find_map_content,
+                   tooltip="Extract all content referenced by a BSP map file and copy it to a new folder for easy map packing.")
         cleanup_group.setLayout(cleanup_grid)
         actions_layout.addWidget(cleanup_group)
 
@@ -515,16 +515,21 @@ class MainWindow(QtWidgets.QMainWindow):
         folder = self.ensure_folder()
         if not folder:
             return
-        map_file = self.ask_file("Select .vmf map file", "VMF files (*.vmf)")
-        if not map_file or not map_file.endswith(".vmf"):
-            QtWidgets.QMessageBox.warning(self, "Invalid map file", "Please select a valid .vmf file.")
+        gamefolder = self.ask_directory("Absolute path to game folder (eg C:/Program Files (x86)/Steam/steamapps/common/GarrysMod)")
+        if not gamefolder or not os.path.exists(os.path.join(gamefolder, "gmod.exe")):
+            QtWidgets.QMessageBox.warning(self, "Invalid game folder", "The selected folder doesn't contain gmod.exe")
+            return
+
+        map_file = self.ask_file("Select .bsp map file", "BSP files (*.bsp)")
+        if not map_file or not map_file.endswith(".bsp"):
+            QtWidgets.QMessageBox.warning(self, "Invalid map file", "Please select a valid .bsp file.")
             return
         dest_folder = self.ask_directory("Folder to copy found content to (will be created if it doesn't exist)")
         if not dest_folder:
             QtWidgets.QMessageBox.warning(self, "Invalid destination", "Please select a destination folder.")
             return
         os.makedirs(dest_folder, exist_ok=True)
-        self.start_task("Find/copy content used by map", find_map_content, folder, dest_folder, map_file)
+        self.start_task("Find/copy content used by map", find_map_content, folder, gamefolder, dest_folder, map_file)
 
     def on_resave_vtf(self):
         folder = self.ensure_folder()
